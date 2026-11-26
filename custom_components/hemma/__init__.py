@@ -6,6 +6,7 @@ import logging
 import os
 from datetime import timedelta
 
+import voluptuous as vol
 from homeassistant.components.frontend import (
     async_register_built_in_panel,
     async_remove_panel,
@@ -16,33 +17,40 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.event import async_track_time_interval
 
 from .assets import HemmaAssetsView, warm_soft
-from .images import HemmaIconsView, HemmaImagesView
-from .templates import HemmaTemplatesView, rebuild_if_stale
-from .i18n import rebuild_if_stale as rebuild_translations_if_stale
-from .home import async_setup_home
-from .notify import async_setup_notify
-from .plant_ai import async_setup_plant_ai
-from .theme import async_setup_theme
-from .helpers import async_setup_helpers
-from .template_refresh import async_setup_template_refresh
 from .const import (
     ASSETS_DIR,
     ASSETS_URL_BASE,
     DOMAIN,
     FONT_CSS,
-    PANEL_ICON,
-    SIDEBAR_TITLE,
     LEGACY_PANEL_URL,
+    PANEL_ICON,
     PANEL_URL,
+    PHOTO_DATA_KEY,
     SCRIPTS_DIR,
     SCRIPTS_URL_BASE,
     SHARED_SCRIPTS,
+    SIDEBAR_TITLE,
     URL_BASE,
     USER_ASSETS_DIR,
     VERSION,
 )
+from .helpers import async_setup_helpers
+from .home import async_setup_home
+from .i18n import rebuild_if_stale as rebuild_translations_if_stale
+from .images import HemmaIconsView, HemmaImagesView
+from .notify import async_setup_notify
+from .photos import manager_from_entry
+from .plant_ai import async_setup_plant_ai
+from .template_refresh import async_setup_template_refresh
+from .templates import HemmaTemplatesView, rebuild_if_stale
+from .theme import async_setup_theme
 
 _LOGGER = logging.getLogger(__name__)
+
+
+async def _async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reload the backend when the Yumi Fotos options change."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 def _lovelace_resources(hass: HomeAssistant):
@@ -109,7 +117,7 @@ async def _sync_script_resources(hass: HomeAssistant, scripts_dir: str) -> None:
         if not getattr(res, "loaded", False):
             await res.async_load()
             res.loaded = True
-    except Exception:  # noqa: BLE001 - a resource list must never block setup
+    except Exception:
         _LOGGER.exception("Hemma: could not read the Lovelace resource list")
         return
 
@@ -139,7 +147,7 @@ async def _sync_script_resources(hass: HomeAssistant, scripts_dir: str) -> None:
             else:
                 await res.async_create_item({"res_type": kind, "url": url})
                 added.append(name)
-        except Exception:  # noqa: BLE001
+        except Exception:
             _LOGGER.exception("Hemma: could not register %s", url)
 
     orphans = [
@@ -167,6 +175,7 @@ async def _sync_script_resources(hass: HomeAssistant, scripts_dir: str) -> None:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Register the panel assets and the sidebar entry."""
+    entry.async_on_unload(entry.add_update_listener(_async_update_options))
     panel_dir = hass.config.path(f"custom_components/{DOMAIN}/panel")
 
     # The bundle is derived from the template tree, so rebuild before the panel loads.
@@ -199,6 +208,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await async_setup_notify(hass)
     await async_setup_home(hass)
     await async_setup_plant_ai(hass)
+
+    # Keep the Yumi Fotos/Immich key and manifest in the integration backend.
+    # The dashboard receives only normalized /local URLs through the sensor.
+    photo_manager = manager_from_entry(hass, entry)
+    await photo_manager.async_initialize()
+    hass.data[PHOTO_DATA_KEY] = photo_manager
+    await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
+    await photo_manager.async_start()
+
+    async def _sync_photos(_call) -> None:
+        await photo_manager.async_sync(force=True)
+
+    hass.services.async_register(DOMAIN, "sync_photos", _sync_photos, vol.Schema({}))
 
     def _stamp() -> int:
         try:
@@ -248,5 +270,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Remove the sidebar entry."""
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor"])
+    photo_manager = hass.data.pop(PHOTO_DATA_KEY, None)
+    if photo_manager is not None:
+        await photo_manager.async_unload()
+    if hass.services.has_service(DOMAIN, "sync_photos"):
+        hass.services.async_remove(DOMAIN, "sync_photos")
     async_remove_panel(hass, PANEL_URL, warn_if_unknown=False)
-    return True
+    return unload_ok

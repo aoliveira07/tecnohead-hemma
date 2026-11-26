@@ -4728,11 +4728,11 @@ ${PILL_CSS}    @media (max-width: 768px) { .lpill { position: fixed; height: 52p
     if (o.dark > 0) SAVER.darkT = setTimeout(() => { const d = sr.querySelector('.dark'); if (d) d.classList.add('on'); }, o.dark * 60000);
     if (!o.instant && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) layer.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 900, easing: 'ease-out' });
   };
-  const SAVER_KEYS = ['layer', 'opts', 'npv', 'clock', 'mini', 'pill', 'shift', 'wx', 'fc', 'cal', 'adv', 'tint', 'darkT', 'unfit', 'key'];
+  const SAVER_KEYS = ['layer', 'opts', 'npv', 'clock', 'mini', 'pill', 'shift', 'wx', 'fc', 'cal', 'ph', 'adv', 'tint', 'darkT', 'unfit', 'key'];
   const saverTake = () => { const st = {}; SAVER_KEYS.forEach((k) => { st[k] = SAVER[k]; SAVER[k] = null; }); return st; };
   const saverPut = (st) => { SAVER_KEYS.forEach((k) => { SAVER[k] = st[k]; }); };
   const saverEnd = (st) => {
-    ['clock', 'mini', 'shift', 'wx', 'fc', 'cal', 'adv', 'tint'].forEach((k) => clearInterval(st[k]));
+    ['clock', 'mini', 'shift', 'wx', 'fc', 'cal', 'ph', 'adv', 'tint'].forEach((k) => clearInterval(st[k]));
     clearTimeout(st.darkT);
     if (st.unfit) st.unfit();
     if (st.key) document.removeEventListener('keydown', st.key, true);
@@ -5112,6 +5112,29 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     .wx .c { font-size: 28px; font-weight: 600; color: var(--hi); display: flex; align-items: center; gap: 6px; }
     .wx .tp { font-size: 168px; font-weight: 600; line-height: 1; letter-spacing: -0.04em; margin-top: 2px; }
     .wx .cd, .wx .hl { font-size: 26px; font-weight: 500; } .wx i { margin: 10px 0 6px; width: 52px; height: 44px; }
+    /* Tecnohead Today photo tile: compact, fixed in the landscape grid and
+       fed by the backend sensor created by the Hemma photo synchroniser. */
+    .fam { position: absolute; left: 480px; top: 520px; width: 360px; padding: 18px; box-sizing: border-box; border: 1px solid rgba(255,255,255,0.22); border-radius: 26px; background: rgba(255,255,255,0.13); -webkit-backdrop-filter: blur(24px) saturate(1.25); backdrop-filter: blur(24px) saturate(1.25); box-shadow: 0 18px 36px -24px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.14); color: var(--ink); cursor: default; transition: opacity .42s ease, transform .42s cubic-bezier(0.32,0.72,0,1); }
+    .fam[hidden] { display: none; }
+    .fam .fh { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; min-width: 0; }
+    .fam .fh b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 23px; font-weight: 700; letter-spacing: -0.02em; }
+    .fam .fh span { flex: none; font-size: 15px; font-weight: 600; color: var(--sub); }
+    .fam .fp { position: relative; margin-top: 12px; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 18px; background: rgba(0,0,0,0.2); box-shadow: 0 8px 20px -14px rgba(0,0,0,0.75); }
+    .fam .fp img { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .5s ease; }
+    .fam .fp img.ready { opacity: 1; }
+    .fam .fb { display: flex; align-items: center; justify-content: space-between; min-height: 18px; margin-top: 11px; }
+    .fam .fb small { font-size: 14px; font-weight: 600; color: var(--sub); }
+    .fam .dots { display: flex; align-items: center; gap: 5px; }
+    .fam .dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--sub); opacity: .45; }
+    .fam .dots i.on { width: 7px; height: 7px; background: var(--hi); opacity: 1; }
+    .stg.family .gl { left: 76px; width: 350px; }
+    .stg.family .fc, .stg.family .cal { left: 76px; width: 340px; }
+    .stg.family .fc div { grid-template-columns: 76px 34px minmax(0, 1fr); gap: 10px; font-size: 22px; }
+    .stg.family .fam { left: 450px; }
+    .stg.family .wx { left: 855px; transform: scale(.76); transform-origin: top left; }
+    :host(.pt) .stg.family .fam { left: 60px; top: 955px; width: 700px; }
+    :host(.pt) .stg.family .gl { left: 60px; width: 340px; }
+    :host(.pt) .stg.family .wx { left: 470px; transform: scale(.58); }
   `;
   const WXF = { sunny: 'clear-day', 'clear-night': 'clear-night', partlycloudy: 'partly-cloudy-day', cloudy: 'cloudy', overcast: 'cloudy', rainy: 'rain', pouring: 'rain', snowy: 'snow', 'snowy-rainy': 'sleet', hail: 'hail', lightning: 'thunderstorms', 'lightning-rainy': 'thunderstorms-rain', fog: 'fog', windy: 'wind', 'windy-variant': 'wind', exceptional: 'weather-mixed' };
   const wxIcon = (c) => `/hemma_assets/weather/${WXF[c] || 'cloudy'}-fill.svg?v=2`;
@@ -5335,6 +5358,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       <svg class="ck" viewBox="0 0 340 340">${ticks}${nums}${hand('hh', 92, 'var(--ink)')}${hand('mh', 140, 'var(--ink)')}<circle cx="170" cy="170" r="5.6" fill="none" style="stroke:var(--ink)" stroke-width="6"/><g class="sh"><line x1="170" y1="${170 + 4}" x2="170" y2="${170 + 28}" style="stroke:var(--sec)" stroke-width="2" stroke-linecap="round"/><line x1="170" y1="${170 - 4}" x2="170" y2="${170 - 160}" style="stroke:var(--sec)" stroke-width="2" stroke-linecap="round"/><circle cx="170" cy="170" r="4.3" fill="none" style="stroke:var(--sec)" stroke-width="3.4"/></g></svg>
       <div class="md" hidden><div class="ar"></div><div class="t"></div><div class="a"></div><button type="button" class="pl"></button></div>
       <div class="fc" hidden></div><div class="cal" hidden></div><div class="gl" hidden></div>
+      <div class="fam" hidden role="group" aria-label="Fotos da família"><div class="fh"><b>Fotos da família</b><span>Hoje</span></div><div class="fp"><img alt="Foto da família"></div><div class="fb"><span class="dots"></span></div></div>
       <div class="wx" hidden><div class="c"><span></span><svg width="18" height="18" viewBox="0 0 16 16"><path d="M15 1 1 7l6 2 2 6z" style="fill:var(--hi)"/></svg></div><div class="tp"></div><i></i><div class="cd"></div><div class="hl"></div></div>
     </div>${o.np === 'keep' ? MINI_HTML : ''}<div class="dark"></div>`;
     stageFit(sr);
@@ -5512,14 +5536,48 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
         wx(); media();
       }).catch(() => {});
     };
+    let familyPhotoKey = '';
+    const familyPhotos = () => {
+      const hs = CAMS.hassNow(), box = $('.fam'), stg = $('.stg');
+      if (!box || !stg) return;
+      const source = Object.values(hs.states || {}).find((item) => {
+        const a = (item && item.attributes) || {};
+        return a.hemma_photo_sync === true || String(a.hemma_photo_sync) === 'true';
+      });
+      const attrs = (source && source.attributes) || {};
+      const photos = Array.isArray(attrs.photos) ? attrs.photos.filter((p) => p && p.url) : [];
+      if (!photos.length) {
+        box.hidden = true;
+        stg.classList.remove('family');
+        familyPhotoKey = '';
+        return;
+      }
+      box.hidden = false;
+      stg.classList.add('family');
+      const seconds = Math.max(5, Number(attrs.interval_seconds) || 12);
+      const index = Math.floor(Date.now() / (seconds * 1000)) % photos.length;
+      const photo = photos[index];
+      const version = photo.updated_at ? `?v=${encodeURIComponent(photo.updated_at)}` : '';
+      const key = `${photo.id || photo.url}${version}`;
+      const image = $('.fam .fp img');
+      if (key !== familyPhotoKey) {
+        familyPhotoKey = key;
+        image.classList.remove('ready');
+        image.onload = () => { if (familyPhotoKey === key) image.classList.add('ready'); };
+        image.src = `${photo.url}${version}`;
+        image.alt = photo.name ? `Foto da família: ${photo.name}` : 'Foto da família';
+      }
+      $('.fam .dots').innerHTML = photos.slice(0, 7).map((_, i) => `<i class="${i === index % 7 ? 'on' : ''}"></i>`).join('');
+    };
     setTimeout(() => { const g = $('.stg'); if (g) g.classList.remove('still'); }, 2500);
-    wx(); forecast(); calendar();
+    wx(); forecast(); calendar(); familyPhotos();
     SAVER.wx = setInterval(() => { wx(); }, 60000);
     SAVER.cal = setInterval(calendar, 5 * 60000);
     SAVER.fc = setInterval(forecast, 30 * 60000);
+    SAVER.ph = setInterval(familyPhotos, 5000);
     saverDrift([['.dt', '.ck'], ['.md'], ['.wx', '.fc'], ['.cal', '.gl']].map((g) => g.map((q) => $(q))));
     if (keep) saverMini(sr, 'pill');
-    saverMount(layer, sr, o, (n) => n.classList.contains('md') || n.classList.contains('wx'));
+    saverMount(layer, sr, o, (n) => n.classList.contains('md') || n.classList.contains('wx') || n.classList.contains('fam'));
     $('.wx').style.cursor = 'pointer';
     $('.wx').onclick = (e) => { e.stopPropagation(); saverWeather(sr, $('.wx'), fc, lang, wid); };
   };

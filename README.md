@@ -88,6 +88,13 @@ Nine screensavers for any tablet, on a stand or mounted on the wall, each in you
 - **Calendar:** the month, with today's date drawn large behind it.
 - **Cameras:** every camera in one grid. Tap one for its live feed.
 
+Tecnohead's Today screensaver also includes a compact **Family Photos** tile
+when the Hemma photo source is configured. It reads the same Yumi Fotos/Immich
+album as Tecnohead Display, keeps the synchronized files inside Home
+Assistant, and cycles through the normalized landscape copies without exposing
+the API key to the browser. Configure the URL, album ID and key under the
+Hemma integration options; `hemma.sync_photos` forces an immediate refresh.
+
 Pick one, or let them take turns with the ones you choose.
 
 <p align="center">

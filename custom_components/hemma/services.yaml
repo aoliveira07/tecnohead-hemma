@@ -5,3 +5,7 @@ light_smart_toggle:
       selector:
         entity:
           domain: light
+
+sync_photos:
+  name: Sync family photos
+  description: Sync the configured Yumi Fotos/Immich album into Home Assistant.

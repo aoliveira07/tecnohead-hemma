@@ -41,5 +41,17 @@ PANEL_TITLE = "Hemma"
 SIDEBAR_TITLE = "Hemma Studio"
 PANEL_ICON = "mdi:view-dashboard-edit"
 
+# Tecnohead photo frame integration.  These defaults mirror the Display
+# add-on, but the API key is intentionally never stored in the dashboard or
+# sent to the browser.
+DEFAULT_IMMICH_URL = "http://192.168.0.201:2283"
+DEFAULT_IMMICH_ALBUM_ID = "e633d071-7e92-4de0-b049-827b7f9ccbd2"
+DEFAULT_PHOTO_SYNC_MINUTES = 10
+DEFAULT_PHOTO_INTERVAL_SECONDS = 12
+PHOTO_FORMAT_VERSION = 1
+PHOTO_MAX_ITEMS = 120
+PHOTO_DATA_KEY = f"{DOMAIN}_photos"
+PHOTO_SENSOR_MARKER = "hemma_photo_sync"
+
 # Registered at /hemma before the rename, so setup removes the old one.
 LEGACY_PANEL_URL = "hemma"

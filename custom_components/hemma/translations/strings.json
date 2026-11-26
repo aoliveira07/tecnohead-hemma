@@ -1,0 +1,38 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Hemma",
+        "description": "Add Hemma and optionally configure the Yumi Fotos album used by Today.",
+        "data": {
+          "immich_url": "Yumi Fotos URL",
+          "immich_api_key": "Yumi Fotos API key",
+          "immich_album_id": "Photo album ID",
+          "photo_sync_minutes": "Sync interval (minutes)",
+          "photo_interval_seconds": "Photo interval (seconds)"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Hemma is already set up."
+    },
+    "create_entry": {
+      "default": "Hemma is ready. Open Hemma Studio to create your dashboard."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Hemma photos",
+        "description": "Credentials stay in Home Assistant; only normalized photo URLs are exposed to the dashboard.",
+        "data": {
+          "immich_url": "Yumi Fotos URL",
+          "immich_api_key": "Yumi Fotos API key",
+          "immich_album_id": "Photo album ID",
+          "photo_sync_minutes": "Sync interval (minutes)",
+          "photo_interval_seconds": "Photo interval (seconds)"
+        }
+      }
+    }
+  }
+}
