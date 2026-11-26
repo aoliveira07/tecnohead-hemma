@@ -1525,18 +1525,46 @@ window.hemmaMenuGlass = {
   // Set outside the guard: a first-wins init would freeze this map at load.
   window.HEMMA_TEMPLATE_SIZES.hemma_entity_actions = 'large';
 
+  // Tecnohead Display test profile: keep every automatic entity tile expanded.
+  // The cards are still the same Hemma cards; this only supplies the large tile
+  // profile when Hemma builds a card from an entity in a room/category page.
+  const HEMMA_EXPANDED_ENTITY_TEMPLATES = new Set([
+    'hemma_air_device', 'hemma_air_purifier', 'hemma_battery',
+    'hemma_camera', 'hemma_cameras', 'hemma_cover', 'hemma_doorbell',
+    'hemma_energy', 'hemma_entity_actions', 'hemma_fan', 'hemma_game',
+    'hemma_humidifier', 'hemma_light', 'hemma_lock', 'hemma_media',
+    'hemma_network', 'hemma_plant', 'hemma_presence', 'hemma_thermostat',
+    'hemma_updates', 'hemma_vacuum',
+  ]);
+
+  const hemmaTemplateList = (cfg) => {
+    const tmpl = cfg?.template;
+    return Array.isArray(tmpl) ? tmpl : (tmpl ? [tmpl] : []);
+  };
+
+  window.hemmaIsExpandedEntity = function (cfg) {
+    return hemmaTemplateList(cfg).some((name) => HEMMA_EXPANDED_ENTITY_TEMPLATES.has(name));
+  };
+
+  window.hemmaExpandedEntityConfig = function (cfg) {
+    if (!cfg || !window.hemmaIsExpandedEntity(cfg)) return cfg;
+    const out = JSON.parse(JSON.stringify(cfg));
+    out.variables = Object.assign({}, out.variables || {}, { size: 'large' });
+    return out;
+  };
+
   // Works off the RAW config: both callers run before button-card merges templates.
   if (typeof window.hemmaCardSize !== 'function') {
     window.hemmaCardSize = function (cfg) {
       if (!cfg) return 'small';
       const direct = cfg.variables?.size;
       if (direct) return String(direct).toLowerCase() === 'large' ? 'large' : 'small';
-      const tmpl = cfg.template;
-      const list = Array.isArray(tmpl) ? tmpl : (tmpl ? [tmpl] : []);
+      const list = hemmaTemplateList(cfg);
       const sizes = window.HEMMA_TEMPLATE_SIZES || {};
       for (const t of list) {
         if (sizes[t] === 'large') return 'large';
       }
+      if (window.hemmaIsExpandedEntity(cfg)) return 'large';
       return 'small';
     };
   }
@@ -4942,11 +4970,17 @@ window.hemmaMenuGlass = {
         grid.className = 'cat-grid';
         (sec.cards || []).forEach((cc) => {
           let el = null;
-          try { el = helpers.createCardElement(JSON.parse(JSON.stringify(cc))); } catch (_) {}
+          try {
+            const cardCfg = window.hemmaExpandedEntityConfig
+              ? window.hemmaExpandedEntityConfig(cc)
+              : JSON.parse(JSON.stringify(cc));
+            el = helpers.createCardElement(cardCfg);
+          } catch (_) {}
           if (!el) return;
           el.classList.add('hemma-compact');
-          const size = (window.hemmaCardSize && window.hemmaCardSize(cc))
-            || (String((cc.variables && cc.variables.size) || '').toLowerCase() === 'large' ? 'large' : 'small');
+          const size = (window.hemmaCardSize && window.hemmaCardSize(
+            window.hemmaExpandedEntityConfig ? window.hemmaExpandedEntityConfig(cc) : cc
+          )) || (String((cc.variables && cc.variables.size) || '').toLowerCase() === 'large' ? 'large' : 'small');
           if (size === 'large') el.dataset.hemmaSize = 'large';
           grid.appendChild(el);
           cards.push(el);

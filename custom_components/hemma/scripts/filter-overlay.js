@@ -1113,11 +1113,14 @@
       ].join(';');
 
       for (const cardCfg of cards) {
-        const card = this._helpers.createCardElement(cardCfg);
+        const expandedCfg = window.hemmaExpandedEntityConfig
+          ? window.hemmaExpandedEntityConfig(cardCfg)
+          : cardCfg;
+        const card = this._helpers.createCardElement(expandedCfg);
         if (!card) continue;
         if (this._hass) { try { card.hass = this._hass; } catch (_) {} }
-        const cardSize = window.hemmaCardSize?.(cardCfg)
-          || (String(cardCfg?.variables?.size || '').toLowerCase() === 'large' ? 'large' : 'small');
+        const cardSize = window.hemmaCardSize?.(expandedCfg)
+          || (String(expandedCfg?.variables?.size || '').toLowerCase() === 'large' ? 'large' : 'small');
         if (cardSize === 'large') card.dataset.hemmaSize = 'large';
         grid.appendChild(card);
         this._cardEls.push(card);
