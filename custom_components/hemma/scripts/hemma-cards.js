@@ -4738,12 +4738,12 @@ ${PILL_CSS}    @media (max-width: 768px) { .lpill { position: fixed; height: 52p
     if (st.key) document.removeEventListener('keydown', st.key, true);
   };
   const saverKeep = () => { if (SAVER.opts && !SAVER.opts.preview) try { localStorage.setItem('hemma_saver_on', JSON.stringify(Object.assign({}, SAVER.opts, { instant: true, at: location.pathname.split('/')[1] || '' }))); } catch (_) {} };
-  const SAVER_ORDER = ['clock', 'face', 'np', 'recent', 'photos', 'week', 'calendar', 'cameras'];
+  const SAVER_ORDER = ['clock', 'face', 'np', 'recent', 'photos', 'aerial', 'week', 'calendar', 'cameras'];
   const saverKind = (s) => (!s || s === 'clock_photo' ? 'clock' : s === 'cards' ? 'recent' : s);
   const SAVER_FACES = ['', 'classic', 'stacked'];
   const saverSwipe = (layer) => {
     let g = null, swiped = 0;
-    const kind0 = saverKind(SAVER.opts && SAVER.opts.style), rooms = kind0 === 'photos' && layer._rooms > 1;
+    const kind0 = saverKind(SAVER.opts && SAVER.opts.style), rooms = (kind0 === 'photos' || kind0 === 'aerial') && layer._rooms > 1;
     const faces = kind0 === 'face' || rooms;
     const size = (ax) => ax === 'y' ? innerHeight : innerWidth;
     const tr = (ax, v) => ax === 'y' ? '0 ' + v + 'px' : v + 'px 0';
@@ -6281,7 +6281,12 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     .pho .dots { position: absolute; left: 50%; bottom: 72px; transform: translateX(-50%); display: flex; gap: 9px; }
     .pho .dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.45); } .pho .dots i.on { background: #fff; }
     .pho .top { transition: top .6s cubic-bezier(.32, .72, 0, 1); } .pho.np .top { top: 100px; }
+    .pho.aer .top { top: 46px; }
+    .pho.aer .tm { font-size: 188px; }
+    .pho.aer .foot { bottom: 68px; }
+    .pho.aer ~ .mini { left: auto; right: 72px; top: max(46px, calc(env(safe-area-inset-top, 0px) + 24px)); width: 164px; height: 54px; border-radius: 27px; }
     :host(.pt) .pho .top { top: 110px; } :host(.pt) .pho.np .top { top: 150px; } :host(.pt) .pho .tm { font-size: 200px; } :host(.pt) .pho .foot { bottom: 90px; }
+    :host(.pt) .pho.aer .top { top: 90px; } :host(.pt) .pho.aer .foot { bottom: 110px; }
     .wk .hd { position: absolute; left: 76px; right: 76px; top: 58px; display: flex; justify-content: space-between; align-items: baseline; }
     .wk .hd h1 { font-size: 64px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; margin: 0; }
     .wk .hd p { font-size: 24px; font-weight: 600; color: var(--sub); margin: 10px 0 0; }
@@ -6354,7 +6359,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     svxForecast(h, saverViewVar('weather_entity') || Object.keys(h.states).find((k) => k.indexOf('weather.') === 0));
   };
   const saverX = (o) => {
-    const h = CAMS.hassNow(), lang = h.language || undefined, kind = o.style;
+    const h = CAMS.hassNow(), lang = h.language || undefined, kind = o.style, isPhoto = kind === 'photos' || kind === 'aerial';
     const layer = document.createElement('div');
     layer.className = 'hemma-saver';
     const sr = layer.attachShadow({ mode: 'open' });
@@ -6366,10 +6371,10 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     const NIGHTS = { '': '#49575c', sand: '#5b564e', sage: '#4c5944', blue: '#44556d', rose: '#654d51', lavender: '#56506a', sea: '#395c5b', clay: '#684e42', plum: '#664b5c', honey: '#5c543f' };
     const tone = pal ? '#' + (pal.light[ck || 'gray'] || pal.light.gray) : (CLOCK_BG[ck] || CLOCK_BG['']);
     const toneN = pal ? '#' + (pal.dark[ck || 'gray'] || pal.dark.gray) : (NIGHTS[ck] || NIGHTS['']);
-    layer.style.setProperty('--sbg', kind === 'photos' || kind === 'cameras' ? '#000' : night ? toneN : tone);
-    if (night || kind === 'photos' || kind === 'cameras') layer.classList.add('dk');
-    const pane = { photos: 'pho', week: 'wk', cameras: 'cmw' }[kind];
-    sr.innerHTML = `<style>${saverCss}${SVX_CSS}${CLOUD_CSS}</style>${kind === 'week' ? '<div class="glows"></div>' : ''}${kind === 'photos' ? '<div class="ph"></div><div class="sh"></div>' : ''}${kind === 'cameras' ? `<div class="cm"></div><button type="button" class="chome"><i style="--i:url('${window.hemmaIconUrl ? window.hemmaIconUrl('home') : ''}')"></i>${esc(T('nav.home', 'Home'))}</button><div class="ctm num"></div>` : `<div class="stg ${pane}"></div>`}${MINI_HTML}<div class="dark"></div>`;
+    layer.style.setProperty('--sbg', isPhoto || kind === 'cameras' ? '#000' : night ? toneN : tone);
+    if (night || isPhoto || kind === 'cameras') layer.classList.add('dk');
+    const pane = { photos: 'pho', aerial: 'pho aer', week: 'wk', cameras: 'cmw' }[kind];
+    sr.innerHTML = `<style>${saverCss}${SVX_CSS}${CLOUD_CSS}</style>${kind === 'week' ? '<div class="glows"></div>' : ''}${isPhoto ? '<div class="ph"></div><div class="sh"></div>' : ''}${kind === 'cameras' ? `<div class="cm"></div><button type="button" class="chome"><i style="--i:url('${window.hemmaIconUrl ? window.hemmaIconUrl('home') : ''}')"></i>${esc(T('nav.home', 'Home'))}</button><div class="ctm num"></div>` : `<div class="stg ${pane}"></div>`}${MINI_HTML}<div class="dark"></div>`;
     const $ = (q) => sr.querySelector(q), stg = $('.stg');
     if (stg) stg.lang = String(lang || 'en');
     if (kind !== 'cameras') stageFit(sr);
@@ -6413,10 +6418,10 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       }
       return out;
     };
-    const ROOMS = kind === 'photos' ? rooms() : [];
-    if (kind === 'photos' && !ROOMS.length) { const p = saverPhoto(); if (p) ROOMS.push({ name: '', url: p }); }
-    if (kind === 'photos' && !ROOMS.length) return;
-    const roomSolo = !(o.rotate > 0) || (Array.isArray(o.cycle) && o.cycle.length === 1 && o.cycle[0] === 'photos');
+    const ROOMS = isPhoto ? rooms() : [];
+    if (isPhoto && !ROOMS.length) { const p = saverPhoto(); if (p) ROOMS.push({ name: '', url: p }); }
+    if (isPhoto && !ROOMS.length) return;
+    const roomSolo = !(o.rotate > 0) || (Array.isArray(o.cycle) && o.cycle.length === 1 && o.cycle[0] === kind);
     let ri = -1;
     const photo = () => {
       ri = (ri + 1) % ROOMS.length;
@@ -6436,7 +6441,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     const put = (html) => { if (html !== last) { last = html; stg.innerHTML = html; } };
     const draw = () => {
       const d = new Date(), x = wxNow();
-      if (kind === 'photos') {
+      if (isPhoto) {
         const r = ROOMS[Math.max(0, ri)] || {};
         put(`<div class="top"><div class="dte">${dateTwo(d)}</div><div class="tm num">${esc(clockTxt(d))}</div></div>`
           + `<div class="foot"><div class="rm">${r.name ? `${r.home ? '' : `<div class="k">${esc(T('nav.home', 'Home'))}</div>`}<div class="n">${esc(r.name)}</div>` : ''}</div>`
@@ -6522,7 +6527,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
         });
       });
     } else {
-      if (kind === 'photos') {
+      if (isPhoto) {
         const wash = (c) => layer.style.setProperty('--tn', c || tone);
         let artFor = null;
         const artwork = () => {
@@ -6547,7 +6552,10 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
           im.src = art;
         };
         artwork(); SAVER.tint = setInterval(artwork, 2000);
-        if (!roomSolo && ROOMS.length > 1) {
+        if (kind === 'aerial') {
+          photo();
+          SAVER.adv = setInterval(photo, Math.max(6000, (o.every || 6) * 1000));
+        } else if (!roomSolo && ROOMS.length > 1) {
           const R = SAVER.rot || (SAVER.rot = {});
           let at = o.room;
           if (at == null) {
@@ -6582,7 +6590,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     if (stg) saverDrift([[stg]]);
     saverMini(sr);
     const mi = $('.mini');
-    if (stg && mi) { const np = () => stg.classList.toggle('np', mi.classList.contains('on')); np(); new MutationObserver(np).observe(mi, { attributes: true, attributeFilter: ['class'] }); }
+    if (stg && mi) { const np = () => stg.classList.toggle('np', kind !== 'aerial' && mi.classList.contains('on')); np(); new MutationObserver(np).observe(mi, { attributes: true, attributeFilter: ['class'] }); }
     saverMount(layer, sr, o, (n) => n.classList.contains('mini') || n.classList.contains('c') || n.classList.contains('cz'));
   };
   window.hemmaSaver = {
@@ -6608,7 +6616,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       if (o.style === 'np') return saverNowPlaying(o);
       if (o.style === 'calendar') return saverCal(o);
       if (o.style === 'face' && o.face === 'stacked') return saverStack(o);
-      if (['photos', 'week', 'cameras'].includes(o.style)) return saverX(o);
+      if (['photos', 'aerial', 'week', 'cameras'].includes(o.style)) return saverX(o);
       if (o.style === 'face') return saverFace(o);
       if (o.style === 'cards') return saverCards(o);
       const layer = document.createElement('div');

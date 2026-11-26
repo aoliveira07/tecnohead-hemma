@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Aerial screensaver
+
+- **Aerial** adds an Apple TV-style photo screensaver to Hemma Studio. It uses the dashboard's configured room images, applies a slow cinematic pan and crossfade, shows the current time and weather without covering the image, and cycles rooms using the existing poster interval.
+- The Now Playing pill remains available while music is playing. Tapping it opens Hemma's existing full-screen player, while tapping anywhere else wakes the dashboard.
+
 ## 2.5.0
 
 Five new screensavers, light control right from the screensaver, a choice of which screensavers take turns, and German.

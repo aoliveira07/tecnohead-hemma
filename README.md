@@ -76,13 +76,14 @@ Tap a tile and its popup grows out of it. Each kind of device gets its own, buil
 
 ## Screensavers
 
-Eight screensavers for any tablet, on a stand or mounted on the wall, each in your dashboard's colors or the colors of what's playing, day and night.
+Nine screensavers for any tablet, on a stand or mounted on the wall, each in your dashboard's colors or the colors of what's playing, day and night.
 
 - **Today:** the date, a clock, the weather, and your calendar or home at a glance. Tap the lights row to dim them from the screensaver.
 - **Clock:** Numerals, Classic or Stacked.
 - **Now Playing:** the full-screen player for whatever's on.
 - **Recently Added:** your newest Plex posters.
 - **Rooms:** your room photos, full screen.
+- **Aerial:** an Apple TV-style photo view with a slow cinematic pan, room and weather context, and a Now Playing pill that opens the full player.
 - **Week:** the days ahead with the forecast and your calendar.
 - **Calendar:** the month, with today's date drawn large behind it.
 - **Cameras:** every camera in one grid. Tap one for its live feed.
@@ -160,7 +161,7 @@ Rooms, tiles, badges, scenes, cameras, weather and screensavers, all in one plac
 - **Cameras** on Home, in rooms and on the Security page, with a timeline of today's motion and doorbell events.
 - **Energy** with today's total, usage by device, and Day, Week and Month.
 - **A plant assistant** that checks a plant's last week of readings against its needs and tells you what to do, using Home Assistant's AI Task when you have one set up.
-- **Screensavers** for any tablet: Today, Clock, Now Playing, Recently Added, Rooms, Week, Calendar and Cameras, with light control from Today.
+- **Screensavers** for any tablet: Today, Clock, Now Playing, Recently Added, Rooms, Aerial, Week, Calendar and Cameras, with light control from Today.
 - **Your choice of what a tap does** on each tile: Normal, Ask First, or View Only for a tablet you hand to a guest.
 - **Your language.** Hemma comes in English, Swedish and German, and follows your Home Assistant language and number formats.
 
