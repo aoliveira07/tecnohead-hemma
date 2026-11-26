@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Brazilian Portuguese
+
+- Added a complete Brazilian Portuguese translation for the Hemma dashboard and Hemma Studio. It follows the language
+  selected in the Home Assistant profile, including `pt` and `pt-BR`.
+
 ### Aerial screensaver
 
 - **Aerial** adds an Apple TV-style photo screensaver to Hemma Studio. It uses the dashboard's configured room images, applies a slow cinematic pan and crossfade, shows the current time and weather without covering the image, and cycles rooms using the existing poster interval.

@@ -170,7 +170,7 @@ Rooms, tiles, badges, scenes, cameras, weather and screensavers, all in one plac
 - **A plant assistant** that checks a plant's last week of readings against its needs and tells you what to do, using Home Assistant's AI Task when you have one set up.
 - **Screensavers** for any tablet: Today, Clock, Now Playing, Recently Added, Rooms, Aerial, Week, Calendar and Cameras, with light control from Today.
 - **Your choice of what a tap does** on each tile: Normal, Ask First, or View Only for a tablet you hand to a guest.
-- **Your language.** Hemma comes in English, Swedish and German, and follows your Home Assistant language and number formats.
+- **Your language.** Hemma comes in English, Swedish, German and Brazilian Portuguese, and follows your Home Assistant language and number formats.
 
 </details>
 
@@ -198,7 +198,7 @@ Open Studio and choose **Import from YAML**. Hemma reads your rooms, entities an
 <summary>Translating Hemma</summary>
 <br/>
 
-Hemma's text lives in one file per language in `custom_components/hemma/translations/dashboard/`. Copy `en.json` to your language code (like `fr.json`) and change only the text on the right. Keep the name on the left, anything in braces like `{n}`, and any `%` signs. Lines starting with `studio.` are Hemma Studio; the rest is the dashboard. Anything you leave out shows in English.
+Hemma's text lives in one file per language in `custom_components/hemma/translations/dashboard/`. Brazilian Portuguese is included as `pt.json` and is selected automatically for Home Assistant profiles set to `pt` or `pt-BR`. Copy `en.json` to your language code (like `fr.json`) and change only the text on the right. Keep the name on the left, anything in braces like `{n}`, and any `%` signs. Lines starting with `studio.` are Hemma Studio; the rest is the dashboard. Anything you leave out shows in English.
 
 `python3 tools/i18ncheck.py --missing fr` lists what a language still needs. To share a translation or improve an existing one, open a pull request with your file.
 
