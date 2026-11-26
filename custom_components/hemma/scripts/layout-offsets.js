@@ -165,12 +165,18 @@
 
   function walkEntityRow() {
     var found = [];
+    var fallback = null;
     walkFind(document, 'hemma-smart-row', found, 0);
     for (var i = 0; i < found.length; i++) {
       var el = found[i];
-      if (el._scrollMode === false && isVisible(el)) return el;
+      if (!isVisible(el)) continue;
+      if (el._scrollMode === false) return el;
+      // Some Hemma builds expose the desktop row with the default scroll
+      // mode unset. It is still the active room row when it is visible; keep
+      // it as a fallback so standalone cards below it are measured too.
+      if (!fallback) fallback = el;
     }
-    return null;
+    return fallback;
   }
 
   // The hemma-nav-bar host is a zero-height fixed anchor; .bar is the real box.
