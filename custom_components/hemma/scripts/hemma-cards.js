@@ -4747,7 +4747,7 @@ ${PILL_CSS}    @media (max-width: 768px) { .lpill { position: fixed; height: 52p
     const faces = kind0 === 'face' || rooms;
     const size = (ax) => ax === 'y' ? innerHeight : innerWidth;
     const tr = (ax, v) => ax === 'y' ? '0 ' + v + 'px' : v + 'px 0';
-    const mine = (e) => e.composedPath().some((n) => n.classList && (n.classList.contains('rdet') || n.classList.contains('mini') || (n.classList.contains('slab') && n.classList.contains('detail')) || n.classList.contains('ls')));
+    const mine = (e) => e.composedPath().some((n) => n.classList && (n.classList.contains('rdet') || n.classList.contains('mini') || (n.classList.contains('slab') && n.classList.contains('detail')) || n.classList.contains('ls') || n.classList.contains('fam') || n.classList.contains('pfv')));
     // Sideways moves through the screensavers; up and down through Clock's faces.
     const build = (dir, ax) => {
       if (ax === 'y' && rooms) {
@@ -5004,7 +5004,7 @@ const saverXfade = (el, bg) => {
     return '';
   };
   // Landscape fills the viewport exactly; portrait keeps the taller iPad-style stage and scales it to fit.
-  const stageFit = (sr) => { const f = () => { const pt = innerHeight > innerWidth * 1.1, k = pt ? Math.min(innerWidth / 820, innerHeight / 1180) : 1; sr.host.classList.toggle('pt', pt); sr.host.style.setProperty('--k', k); }; f(); addEventListener('resize', f); SAVER.unfit = () => removeEventListener('resize', f); };
+  const stageFit = (sr) => { const f = () => { const pt = innerHeight > innerWidth * 1.1, compact = !pt && innerWidth <= 1500 && innerHeight <= 900; const k = pt ? Math.min(innerWidth / 820, innerHeight / 1180) : 1; sr.host.classList.toggle('pt', pt); sr.host.classList.toggle('compact', compact); sr.host.style.setProperty('--k', k); }; f(); addEventListener('resize', f); SAVER.unfit = () => removeEventListener('resize', f); };
   const CLOCK_BG = { '': '#97a9ae', sand: '#c8b9a2', sage: '#a3b29a', blue: '#93a7c2', rose: '#c6a9ad', lavender: '#afa9c9', sea: '#90b7b6', clay: '#cea796', plum: '#c0a0b4', honey: '#cab992', black: '#000' };
   const CLOUD_CSS = `
     .glows { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
@@ -5115,7 +5115,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     /* Tecnohead Today photo lane: portrait-only family photos run from top to
        bottom in the centre. The blurred copy fills the lane behind the intact
        image so mixed portrait ratios never produce black side bars. */
-    .fam { position: absolute; left: 50%; top: 0; width: min(44vw, 80vh); height: 100%; padding: 0; box-sizing: border-box; overflow: hidden; transform: translateX(-50%); border: 1px solid rgba(255,255,255,0.28); border-radius: 28px; background: rgba(0,0,0,0.18); box-shadow: 0 24px 48px -28px rgba(0,0,0,0.82), inset 0 1px 0 rgba(255,255,255,0.22); color: #fff; cursor: default; transition: opacity .42s ease, transform .42s cubic-bezier(0.32,0.72,0,1); z-index: 1; }
+    .fam { position: absolute; left: 50%; top: 0; width: min(44vw, 80vh); height: 100%; padding: 0; box-sizing: border-box; overflow: hidden; transform: translateX(-50%); border: 1px solid rgba(255,255,255,0.28); border-radius: 28px; background: rgba(0,0,0,0.18); box-shadow: 0 24px 48px -28px rgba(0,0,0,0.82), inset 0 1px 0 rgba(255,255,255,0.22); color: #fff; cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; transition: opacity .42s ease, transform .42s cubic-bezier(0.32,0.72,0,1); z-index: 1; }
     .fam[hidden] { display: none; }
     .fam .fp { position: absolute; inset: 0; margin: 0; overflow: hidden; border-radius: inherit; background: rgba(0,0,0,0.22); box-shadow: none; }
     .fam .fp::before { content: ""; position: absolute; inset: -10%; z-index: 0; background-image: var(--fam-photo, none); background-position: center; background-size: cover; background-repeat: no-repeat; filter: blur(28px) saturate(1.15) brightness(.62); transform: scale(1.08); }
@@ -5130,12 +5130,41 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     .fam .dots { display: flex; align-items: center; gap: 5px; }
     .fam .dots i { width: 6px; height: 6px; border-radius: 50%; background: #fff; opacity: .58; }
     .fam .dots i.on { width: 8px; height: 8px; background: #fff; opacity: 1; }
+    .pfv { position: absolute; inset: 0; z-index: 20; display: grid; grid-template: auto minmax(0, 1fr) auto / 72px minmax(0, 1fr) 72px; align-items: center; gap: 14px; padding: 24px 30px 22px; box-sizing: border-box; overflow: hidden; background: rgba(12,14,18,.84); -webkit-backdrop-filter: blur(18px) saturate(1.12); backdrop-filter: blur(18px) saturate(1.12); color: #fff; touch-action: none; -webkit-user-select: none; user-select: none; }
+    .pfv[hidden] { display: none; }
+    .pfv::before { content: ""; position: absolute; inset: -8%; z-index: -1; background: var(--pfv-photo, none) center / cover no-repeat; filter: blur(36px) brightness(.42) saturate(1.12); transform: scale(1.08); opacity: .7; }
+    .pfv .pvtop { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 20px; min-width: 0; }
+    .pfv .pvtop b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 24px; font-weight: 650; }
+    .pfv .pvtop span { flex: none; font-size: 17px; color: rgba(255,255,255,.72); }
+    .pfv button { display: grid; place-items: center; width: 56px; height: 56px; padding: 0; border: 1px solid rgba(255,255,255,.3); border-radius: 50%; background: rgba(0,0,0,.28); color: #fff; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .pfv button:active { background: rgba(255,255,255,.24); transform: scale(.96); }
+    .pfv .pvclose { width: 48px; height: 48px; font-size: 30px; line-height: 1; }
+    .pfv .pvnav { align-self: center; }
+    .pfv .pvframe { position: relative; display: grid; place-items: center; min-width: 0; min-height: 0; width: 100%; height: 100%; overflow: hidden; }
+    .pfv .pvframe img { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; border-radius: 18px; box-shadow: 0 24px 72px rgba(0,0,0,.42); pointer-events: none; opacity: 0; transition: opacity .3s ease; }
+    .pfv .pvframe img.ready { opacity: 1; }
+    .pfv .pvfoot { grid-column: 1 / -1; display: flex; justify-content: center; align-items: center; min-height: 18px; }
+    .pfv .pvdots { display: flex; gap: 6px; align-items: center; }
+    .pfv .pvdots i { width: 7px; height: 7px; border-radius: 50%; background: #fff; opacity: .5; }
+    .pfv .pvdots i.on { width: 9px; height: 9px; opacity: 1; }
     .stg.family .dt { left: 5%; width: 28%; }
     .stg.family .ck { right: 5%; width: 280px; height: 280px; }
     .stg.family .gl { left: 5%; width: 28%; }
     .stg.family .fc, .stg.family .cal { left: 5%; width: 28%; }
     .stg.family .fc div { grid-template-columns: 76px 34px minmax(0, 1fr); gap: 10px; font-size: 22px; }
     .stg.family .wx { left: 75%; top: 54%; transform: scale(.72); transform-origin: top left; }
+    :host(.compact) .stg.family .fam { width: min(42vw, 78vh); }
+    :host(.compact) .stg.family .dt { left: 4%; width: 26%; transform: scale(.84); transform-origin: left top; }
+    :host(.compact) .stg.family .gl { left: 4%; width: 26%; transform: scale(.78); transform-origin: left top; }
+    :host(.compact) .stg.family .gl > div { gap: 11px; font-size: 32px; }
+    :host(.compact) .stg.family .gl i { width: 44px; height: 44px; }
+    :host(.compact) .stg.family .fc, :host(.compact) .stg.family .cal { left: 4%; width: 26%; transform: scale(.78); transform-origin: left top; }
+    :host(.compact) .stg.family .fc div { grid-template-columns: 66px 30px minmax(0, 1fr); gap: 8px; font-size: 19px; }
+    :host(.compact) .stg.family .ck { right: 4%; width: 250px; height: 250px; }
+    :host(.compact) .stg.family .wx { left: 78%; top: 56%; transform: scale(.64); }
+    :host(.compact) .pfv { grid-template-columns: 58px minmax(0, 1fr) 58px; gap: 10px; padding-inline: 20px; }
+    :host(.compact) .pfv .pvtop b { font-size: 20px; }
+    :host(.compact) .pfv button { width: 48px; height: 48px; }
     :host(.pt) .stg.family .fam { left: 60px; top: 955px; width: 700px; height: 35%; transform: none; }
     :host(.pt) .stg.family .gl { left: 60px; width: 340px; }
     :host(.pt) .stg.family .wx { left: 470px; transform: scale(.58); }
@@ -5363,6 +5392,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       <div class="md" hidden><div class="ar"></div><div class="t"></div><div class="a"></div><button type="button" class="pl"></button></div>
       <div class="fc" hidden></div><div class="cal" hidden></div><div class="gl" hidden></div>
        <div class="fam" hidden role="group" aria-label="Fotos"><div class="fp"><img alt="Foto"></div><div class="fb"><span class="dots"></span></div></div>
+       <div class="pfv" hidden role="dialog" aria-label="Visualizador de fotos"><div class="pvtop"><button type="button" class="pvclose" aria-label="Voltar">×</button><b class="pvname">Fotos</b><span class="pvcount"></span></div><button type="button" class="pvnav pvprev" aria-label="Foto anterior">‹</button><div class="pvframe"><img alt="Foto da família"></div><button type="button" class="pvnav pvnext" aria-label="Próxima foto">›</button><div class="pvfoot"><span class="pvdots"></span></div></div>
       <div class="wx" hidden><div class="c"><span></span><svg width="18" height="18" viewBox="0 0 16 16"><path d="M15 1 1 7l6 2 2 6z" style="fill:var(--hi)"/></svg></div><div class="tp"></div><i></i><div class="cd"></div><div class="hl"></div></div>
     </div>${o.np === 'keep' ? MINI_HTML : ''}<div class="dark"></div>`;
     stageFit(sr);
@@ -5540,7 +5570,36 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
         wx(); media();
       }).catch(() => {});
     };
-    let familyPhotoKey = '';
+    let familyPhotoKey = '', familyPhotoIndex = 0, familyPhotoManualUntil = 0, familyPhotoList = [], familyPhotoSwipeUntil = 0;
+    const familyPhotoUrl = (photo) => {
+      const version = photo && photo.updated_at ? `?v=${encodeURIComponent(photo.updated_at)}` : '';
+      return `${photo && photo.url ? photo.url : ''}${version}`;
+    };
+    const familyPhotoIndexAt = (index, photos = familyPhotoList) => photos.length ? ((index % photos.length) + photos.length) % photos.length : 0;
+    const familyPhotoRender = (photos, index) => {
+      const box = $('.fam'), stg = $('.stg');
+      if (!box || !stg || !photos.length) return;
+      familyPhotoList = photos;
+      familyPhotoIndex = familyPhotoIndexAt(index, photos);
+      box.hidden = false;
+      stg.classList.add('family');
+      const photo = photos[familyPhotoIndex], imageUrl = familyPhotoUrl(photo), key = `${photo.id || photo.url}${imageUrl.includes('?') ? imageUrl.slice(imageUrl.indexOf('?')) : ''}`;
+      const image = $('.fam .fp img');
+      if (key !== familyPhotoKey) {
+        familyPhotoKey = key;
+        image.classList.remove('ready');
+        image.onload = () => { if (familyPhotoKey === key) image.classList.add('ready'); };
+        $('.fam .fp').style.setProperty('--fam-photo', `url("${imageUrl.replace(/"/g, '%22')}")`);
+        image.src = imageUrl;
+        image.alt = photo.name ? `Foto da família: ${photo.name}` : 'Foto da família';
+      }
+      $('.fam .dots').innerHTML = photos.map((_, i) => `<i class="${i === familyPhotoIndex ? 'on' : ''}"></i>`).join('');
+    };
+    const familyPhotoStep = (dir) => {
+      if (!familyPhotoList.length) return;
+      familyPhotoManualUntil = Date.now() + 60000;
+      familyPhotoRender(familyPhotoList, familyPhotoIndex + dir);
+    };
     const familyPhotos = () => {
       const hs = CAMS.hassNow(), box = $('.fam'), stg = $('.stg');
       if (!box || !stg) return;
@@ -5558,27 +5617,69 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
         box.hidden = true;
         stg.classList.remove('family');
         familyPhotoKey = '';
+        familyPhotoList = [];
         return;
       }
-      box.hidden = false;
-      stg.classList.add('family');
+      familyPhotoList = photos;
       const seconds = Math.max(5, Number(attrs.interval_seconds) || 12);
-      const index = Math.floor(Date.now() / (seconds * 1000)) % photos.length;
-      const photo = photos[index];
-      const version = photo.updated_at ? `?v=${encodeURIComponent(photo.updated_at)}` : '';
-      const key = `${photo.id || photo.url}${version}`;
-      const image = $('.fam .fp img');
-      if (key !== familyPhotoKey) {
-        familyPhotoKey = key;
-        image.classList.remove('ready');
-        image.onload = () => { if (familyPhotoKey === key) image.classList.add('ready'); };
-        const imageUrl = `${photo.url}${version}`;
-        $('.fam .fp').style.setProperty('--fam-photo', `url("${imageUrl.replace(/"/g, '%22')}")`);
-        image.src = imageUrl;
-        image.alt = photo.name ? `Foto da família: ${photo.name}` : 'Foto da família';
-      }
-      $('.fam .dots').innerHTML = photos.slice(0, 7).map((_, i) => `<i class="${i === index % 7 ? 'on' : ''}"></i>`).join('');
+      const automatic = Math.floor(Date.now() / (seconds * 1000)) % photos.length;
+      const index = familyPhotoManualUntil > Date.now() ? familyPhotoIndex : automatic;
+      familyPhotoRender(photos, index);
     };
+    const familyViewer = $('.pfv'), familyViewerImage = familyViewer && $('.pfv .pvframe img');
+    let familyViewerIndex = 0, familyViewerGesture = null;
+    const familyViewerRender = (index) => {
+      if (!familyViewer || !familyPhotoList.length) return;
+      familyViewerIndex = familyPhotoIndexAt(index);
+      const photo = familyPhotoList[familyViewerIndex], imageUrl = familyPhotoUrl(photo);
+      familyViewer.style.setProperty('--pfv-photo', `url("${imageUrl.replace(/"/g, '%22')}")`);
+      familyViewerImage.classList.remove('ready');
+      familyViewerImage.onload = () => { familyViewerImage.classList.add('ready'); };
+      familyViewerImage.src = imageUrl;
+      familyViewerImage.alt = photo.name ? `Foto da família: ${photo.name}` : 'Foto da família';
+      $('.pfv .pvname').textContent = photo.name || 'Fotos da família';
+      $('.pfv .pvcount').textContent = `${familyViewerIndex + 1} / ${familyPhotoList.length}`;
+      $('.pfv .pvdots').innerHTML = familyPhotoList.map((_, i) => `<i class="${i === familyViewerIndex ? 'on' : ''}"></i>`).join('');
+    };
+    const familyViewerOpen = (index = familyPhotoIndex) => {
+      if (!familyViewer || !familyPhotoList.length) return;
+      familyPhotoManualUntil = Date.now() + 60000;
+      familyViewer.hidden = false;
+      familyViewerRender(index);
+    };
+    const familyViewerClose = () => { if (familyViewer) familyViewer.hidden = true; };
+    const familyViewerStep = (dir) => {
+      if (!familyPhotoList.length) return;
+      familyPhotoManualUntil = Date.now() + 60000;
+      familyPhotoRender(familyPhotoList, familyViewerIndex + dir);
+      familyViewerRender(familyPhotoIndex);
+    };
+    const familyPointerEnd = (e, gesture, open) => {
+      if (!gesture || e.pointerId !== gesture.id) return;
+      const dx = e.clientX - gesture.x, dy = e.clientY - gesture.y;
+      if (Math.abs(dx) > 36 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+        e.preventDefault();
+        familyPhotoSwipeUntil = Date.now() + 500;
+        if (open) familyViewerStep(dx < 0 ? 1 : -1);
+        else familyPhotoStep(dx < 0 ? 1 : -1);
+      }
+    };
+    if (box) {
+      let gesture = null;
+      box.addEventListener('pointerdown', (e) => { if (!e.isPrimary) return; gesture = { id: e.pointerId, x: e.clientX, y: e.clientY }; try { box.setPointerCapture(e.pointerId); } catch (_) {} }, true);
+      box.addEventListener('pointerup', (e) => { familyPointerEnd(e, gesture, false); gesture = null; }, true);
+      box.addEventListener('pointercancel', () => { gesture = null; }, true);
+      box.addEventListener('click', (e) => { e.stopPropagation(); if (Date.now() >= familyPhotoSwipeUntil) familyViewerOpen(familyPhotoIndex); }, true);
+    }
+    if (familyViewer) {
+      familyViewer.querySelector('.pvclose').onclick = (e) => { e.stopPropagation(); familyViewerClose(); };
+      familyViewer.querySelector('.pvprev').onclick = (e) => { e.stopPropagation(); familyViewerStep(-1); };
+      familyViewer.querySelector('.pvnext').onclick = (e) => { e.stopPropagation(); familyViewerStep(1); };
+      familyViewer.addEventListener('click', (e) => { if (e.target === familyViewer || e.target === familyViewer.querySelector('.pvframe')) familyViewerClose(); }, true);
+      familyViewer.addEventListener('pointerdown', (e) => { if (!e.isPrimary) return; familyViewerGesture = { id: e.pointerId, x: e.clientX, y: e.clientY }; try { familyViewer.setPointerCapture(e.pointerId); } catch (_) {} }, true);
+      familyViewer.addEventListener('pointerup', (e) => { familyPointerEnd(e, familyViewerGesture, true); familyViewerGesture = null; }, true);
+      familyViewer.addEventListener('pointercancel', () => { familyViewerGesture = null; }, true);
+    }
     setTimeout(() => { const g = $('.stg'); if (g) g.classList.remove('still'); }, 2500);
     wx(); forecast(); calendar(); familyPhotos();
     SAVER.wx = setInterval(() => { wx(); }, 60000);
@@ -5587,7 +5688,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     SAVER.ph = setInterval(familyPhotos, 5000);
     saverDrift([['.dt', '.ck'], ['.md'], ['.wx', '.fc'], ['.cal', '.gl']].map((g) => g.map((q) => $(q))));
     if (keep) saverMini(sr, 'pill');
-    saverMount(layer, sr, o, (n) => n.classList.contains('md') || n.classList.contains('wx') || n.classList.contains('fam'));
+    saverMount(layer, sr, o, (n) => n.classList.contains('md') || n.classList.contains('wx') || n.classList.contains('fam') || n.classList.contains('pfv'));
     $('.wx').style.cursor = 'pointer';
     $('.wx').onclick = (e) => { e.stopPropagation(); saverWeather(sr, $('.wx'), fc, lang, wid); };
   };

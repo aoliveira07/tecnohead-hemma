@@ -5,6 +5,7 @@
 ### Today family photos
 
 - The Tecnohead Today panel now shows only portrait photos in a full-height centre lane. The complete image stays visible, with a softly blurred copy filling the side areas when its aspect ratio is narrower than the lane.
+- The compact 1366×768 kitchen panel now uses a smaller Today typography scale and shifts the weather block beneath the clock. Tapping the photo opens a viewer; horizontal touch swipes move to the previous or next portrait.
 
 ### Brazilian Portuguese
 
