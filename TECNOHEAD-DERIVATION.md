@@ -20,10 +20,11 @@ de incorporar atualizações do Hemma por meio do remoto `upstream`.
 O fluxo de fotos do Tecnohead Display foi incorporado nesta derivação. O
 Hemma consulta somente o álbum configurado do Yumi Fotos/Immich, salva as
 miniaturas normalizadas em `www/hemma/photos` dentro do Home Assistant e
-publica apenas os URLs locais por meio do sensor `Fotos da família`. Fotos em
-retrato viram um canvas paisagem 1920×1080 com preenchimento desfocado, sem
-esticar nem cortar a imagem original. A chave da API fica somente nas opções
-da integração.
+publica os URLs locais por meio do sensor `Fotos da família`, junto com a
+orientação e as dimensões de cada arquivo. O Today usa somente fotos verticais:
+elas preservam o enquadramento inteiro e ocupam uma faixa central de cima a
+baixo, com uma cópia desfocada preenchendo as laterais quando necessário.
+A chave da API fica somente nas opções da integração.
 
 ## Perfil atual de teste
 

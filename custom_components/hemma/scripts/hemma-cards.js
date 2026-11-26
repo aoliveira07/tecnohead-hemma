@@ -5112,13 +5112,15 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     .wx .c { font-size: 28px; font-weight: 600; color: var(--hi); display: flex; align-items: center; gap: 6px; }
     .wx .tp { font-size: 168px; font-weight: 600; line-height: 1; letter-spacing: -0.04em; margin-top: 2px; }
     .wx .cd, .wx .hl { font-size: 26px; font-weight: 500; } .wx i { margin: 10px 0 6px; width: 52px; height: 44px; }
-    /* Tecnohead Today photo tile: compact, fixed in the landscape grid and
-       fed by the backend sensor created by the Hemma photo synchroniser. */
-    .fam { position: absolute; left: 36%; top: 54%; width: 36%; height: 35%; padding: 0; box-sizing: border-box; overflow: hidden; border: 1px solid rgba(255,255,255,0.32); border-radius: 26px; background: rgba(255,255,255,0.16); -webkit-backdrop-filter: blur(24px) saturate(1.35); backdrop-filter: blur(24px) saturate(1.35); box-shadow: 0 20px 40px -24px rgba(0,0,0,0.82), inset 0 1px 0 rgba(255,255,255,0.24); color: #fff; cursor: default; transition: opacity .42s ease, transform .42s cubic-bezier(0.32,0.72,0,1); }
+    /* Tecnohead Today photo lane: portrait-only family photos run from top to
+       bottom in the centre. The blurred copy fills the lane behind the intact
+       image so mixed portrait ratios never produce black side bars. */
+    .fam { position: absolute; left: 50%; top: 0; width: min(44vw, 80vh); height: 100%; padding: 0; box-sizing: border-box; overflow: hidden; transform: translateX(-50%); border: 1px solid rgba(255,255,255,0.28); border-radius: 28px; background: rgba(0,0,0,0.18); box-shadow: 0 24px 48px -28px rgba(0,0,0,0.82), inset 0 1px 0 rgba(255,255,255,0.22); color: #fff; cursor: default; transition: opacity .42s ease, transform .42s cubic-bezier(0.32,0.72,0,1); z-index: 1; }
     .fam[hidden] { display: none; }
     .fam .fp { position: absolute; inset: 0; margin: 0; overflow: hidden; border-radius: inherit; background: rgba(0,0,0,0.22); box-shadow: none; }
-    .fam .fp::after { content: none; }
-    .fam .fp img { display: block; width: 100%; height: 100%; object-fit: fill; filter: saturate(1.08) brightness(1.05); opacity: 0; transition: opacity .5s ease; }
+    .fam .fp::before { content: ""; position: absolute; inset: -10%; z-index: 0; background-image: var(--fam-photo, none); background-position: center; background-size: cover; background-repeat: no-repeat; filter: blur(28px) saturate(1.15) brightness(.62); transform: scale(1.08); }
+    .fam .fp::after { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,.12), transparent 20%, transparent 78%, rgba(0,0,0,.22)); }
+    .fam .fp img { position: relative; z-index: 1; display: block; width: 100%; height: 100%; object-fit: contain; object-position: center; filter: saturate(1.08) brightness(1.05); opacity: 0; transition: opacity .5s ease; }
     .fam .fp img.ready { opacity: 1; }
     .fam .fh { display: none; }
     .fam .fh b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; text-shadow: 0 2px 12px rgba(0,0,0,0.45); }
@@ -5128,12 +5130,13 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     .fam .dots { display: flex; align-items: center; gap: 5px; }
     .fam .dots i { width: 6px; height: 6px; border-radius: 50%; background: #fff; opacity: .58; }
     .fam .dots i.on { width: 8px; height: 8px; background: #fff; opacity: 1; }
-    .stg.family .gl { left: 5%; width: 31%; }
-    .stg.family .fc, .stg.family .cal { left: 5%; width: 30%; }
+    .stg.family .dt { left: 5%; width: 28%; }
+    .stg.family .ck { right: 5%; width: 280px; height: 280px; }
+    .stg.family .gl { left: 5%; width: 28%; }
+    .stg.family .fc, .stg.family .cal { left: 5%; width: 28%; }
     .stg.family .fc div { grid-template-columns: 76px 34px minmax(0, 1fr); gap: 10px; font-size: 22px; }
-    .stg.family .fam { left: 36%; top: 54%; width: 36%; height: 35%; }
-    .stg.family .wx { left: 74%; top: 54%; transform: scale(.76); transform-origin: top left; }
-    :host(.pt) .stg.family .fam { left: 60px; top: 955px; width: 700px; }
+    .stg.family .wx { left: 75%; top: 54%; transform: scale(.72); transform-origin: top left; }
+    :host(.pt) .stg.family .fam { left: 60px; top: 955px; width: 700px; height: 35%; transform: none; }
     :host(.pt) .stg.family .gl { left: 60px; width: 340px; }
     :host(.pt) .stg.family .wx { left: 470px; transform: scale(.58); }
   `;
@@ -5546,7 +5549,11 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
         return a.hemma_photo_sync === true || String(a.hemma_photo_sync) === 'true';
       });
       const attrs = (source && source.attributes) || {};
-      const photos = Array.isArray(attrs.photos) ? attrs.photos.filter((p) => p && p.url) : [];
+      // This panel is a full-height portrait lane. Keep landscape and square
+      // assets available to the backend, but never put them in this carousel.
+      const photos = Array.isArray(attrs.photos)
+        ? attrs.photos.filter((p) => p && p.url && (p.portrait === true || Number(p.height) > Number(p.width)))
+        : [];
       if (!photos.length) {
         box.hidden = true;
         stg.classList.remove('family');
@@ -5565,7 +5572,9 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
         familyPhotoKey = key;
         image.classList.remove('ready');
         image.onload = () => { if (familyPhotoKey === key) image.classList.add('ready'); };
-        image.src = `${photo.url}${version}`;
+        const imageUrl = `${photo.url}${version}`;
+        $('.fam .fp').style.setProperty('--fam-photo', `url("${imageUrl.replace(/"/g, '%22')}")`);
+        image.src = imageUrl;
         image.alt = photo.name ? `Foto da família: ${photo.name}` : 'Foto da família';
       }
       $('.fam .dots').innerHTML = photos.slice(0, 7).map((_, i) => `<i class="${i === index % 7 ? 'on' : ''}"></i>`).join('');

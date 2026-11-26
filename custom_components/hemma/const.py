@@ -48,8 +48,9 @@ DEFAULT_IMMICH_URL = "http://192.168.0.201:2283"
 DEFAULT_IMMICH_ALBUM_ID = "e633d071-7e92-4de0-b049-827b7f9ccbd2"
 DEFAULT_PHOTO_SYNC_MINUTES = 10
 DEFAULT_PHOTO_INTERVAL_SECONDS = 12
-# Bump when the normalized pixels change so an existing HA cache is rebuilt.
-PHOTO_FORMAT_VERSION = 2
+# Bump when the normalized pixels or orientation metadata change so an existing
+# HA cache is rebuilt.
+PHOTO_FORMAT_VERSION = 3
 PHOTO_MAX_ITEMS = 120
 PHOTO_DATA_KEY = f"{DOMAIN}_photos"
 PHOTO_SENSOR_MARKER = "hemma_photo_sync"

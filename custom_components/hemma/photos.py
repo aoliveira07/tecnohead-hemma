@@ -42,6 +42,7 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 NORMALIZED_WIDTH = 1920
 NORMALIZED_HEIGHT = 1080
+PORTRAIT_LONG_EDGE = 1920
 PHOTO_ROOT = ("www", "hemma", "photos")
 MANIFEST_STORE_KEY = f"{DOMAIN}.photos"
 
@@ -224,9 +225,11 @@ class HemmaPhotoSync:
     def _filename(asset_id: str) -> str:
         # A digest avoids putting an external identifier directly into a path.
         digest = hashlib.sha256(asset_id.encode("utf-8")).hexdigest()[:20]
-        return f"{digest}-{NORMALIZED_WIDTH}x{NORMALIZED_HEIGHT}.jpg"
+        return f"{digest}-v{PHOTO_FORMAT_VERSION}.jpg"
 
-    async def _download_preview(self, asset_id: str, destination: Path) -> None:
+    async def _download_preview(
+        self, asset_id: str, destination: Path
+    ) -> tuple[int, int, bool]:
         try:
             async with self._session.get(
                 self._url(f"/api/assets/{quote(asset_id, safe='')}/thumbnail"),
@@ -245,26 +248,32 @@ class HemmaPhotoSync:
         if not data:
             raise HemmaPhotosError("Yumi Fotos devolveu uma miniatura vazia")
         try:
-            await self.hass.async_add_executor_job(self._normalize_image, data, destination)
+            return await self.hass.async_add_executor_job(
+                self._normalize_image, data, destination
+            )
         except Exception as exc:
             raise HemmaPhotosError(f"Não foi possível normalizar a foto: {exc}") from exc
 
     @staticmethod
-    def _normalize_image(source: bytes, destination: Path) -> None:
-        """Create a vivid 1920x1080 image without cropping the source photo.
+    def _normalize_image(source: bytes, destination: Path) -> tuple[int, int, bool]:
+        """Normalize a photo while retaining its orientation and full frame.
 
-        Today uses the photo as a full-bleed tile.  Stretching the complete
-        source into that fixed landscape canvas is intentional: it avoids the
-        blurred side panels and never removes a person or another part of the
-        original frame.  The small color/contrast lift keeps the result from
-        looking washed out on the kiosk display.
+        Landscape assets keep the legacy 1920x1080 canvas for other Hemma
+        surfaces. Portrait assets keep their aspect ratio and are capped at a
+        1920px long edge so Today can show the complete vertical photo in its
+        full-height centre lane. The small color/contrast lift keeps the
+        result from looking washed out on the kiosk display.
         """
 
         with Image.open(BytesIO(source)) as opened:
             image = ImageOps.exif_transpose(opened).convert("RGB")
 
-        target = (NORMALIZED_WIDTH, NORMALIZED_HEIGHT)
-        canvas = image.resize(target, Image.Resampling.LANCZOS)
+        portrait = image.height > image.width
+        if portrait:
+            canvas = image.copy()
+            canvas.thumbnail((PORTRAIT_LONG_EDGE, PORTRAIT_LONG_EDGE), Image.Resampling.LANCZOS)
+        else:
+            canvas = image.resize((NORMALIZED_WIDTH, NORMALIZED_HEIGHT), Image.Resampling.LANCZOS)
         canvas = ImageEnhance.Color(canvas).enhance(1.08)
         canvas = ImageEnhance.Contrast(canvas).enhance(1.04)
         canvas = ImageEnhance.Brightness(canvas).enhance(1.03)
@@ -276,6 +285,7 @@ class HemmaPhotoSync:
             os.replace(temporary, destination)
         finally:
             temporary.unlink(missing_ok=True)
+        return canvas.width, canvas.height, portrait
 
     async def async_sync(self, force: bool = False) -> dict[str, Any]:
         await self.async_initialize()
@@ -307,7 +317,13 @@ class HemmaPhotoSync:
                         or prior.get("format_version") != PHOTO_FORMAT_VERSION
                     )
                     if changed:
-                        await self._download_preview(asset_id, destination)
+                        width, height, portrait = await self._download_preview(
+                            asset_id, destination
+                        )
+                    else:
+                        width = _as_int(prior.get("width"), NORMALIZED_WIDTH)
+                        height = _as_int(prior.get("height"), NORMALIZED_HEIGHT)
+                        portrait = bool(prior.get("portrait")) or height > width
                     photos.append(
                         {
                             "id": asset_id,
@@ -318,8 +334,10 @@ class HemmaPhotoSync:
                             "updated_at": asset.get("updatedAt"),
                             "checksum": asset.get("checksum"),
                             "format_version": PHOTO_FORMAT_VERSION,
-                            "width": NORMALIZED_WIDTH,
-                            "height": NORMALIZED_HEIGHT,
+                            "width": width,
+                            "height": height,
+                            "portrait": portrait,
+                            "orientation": "portrait" if portrait else "landscape",
                         }
                     )
                 self._manifest = {

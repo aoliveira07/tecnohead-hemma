@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Today family photos
+
+- The Tecnohead Today panel now shows only portrait photos in a full-height centre lane. The complete image stays visible, with a softly blurred copy filling the side areas when its aspect ratio is narrower than the lane.
+
 ### Brazilian Portuguese
 
 - Added a complete Brazilian Portuguese translation for the Hemma dashboard and Hemma Studio. It follows the language
