@@ -17,7 +17,7 @@ de incorporar atualizações do Hemma por meio do remoto `upstream`.
 
 ## Perfil atual de teste
 
-Na versão `2.5.1`, os cartões automáticos de entidades ficam no modo expandido
-em todas as páginas de cômodos e categorias. O objetivo é validar a leitura e o
-uso na tela de 1.106 antes de decidir o tamanho definitivo para cada tipo de
-dispositivo.
+Na versão `2.5.2`, os cartões automáticos de entidades ficam no modo expandido
+na tela inicial e em todas as páginas de cômodos e categorias. O objetivo é
+validar a leitura e o uso na tela de 1.106 antes de decidir o tamanho definitivo
+para cada tipo de dispositivo.

@@ -720,8 +720,11 @@ class HemmaSmartRow extends HTMLElement {
       this._cards = this._config.cards.map((cfg) => {
         // Same rule as the sorted path below: an off card is never built.
         if (isCardDisabled(cfg, this._scrollMode)) return null;
+        const expandedCfg = window.hemmaExpandedEntityConfig
+          ? window.hemmaExpandedEntityConfig(cfg)
+          : cfg;
         try {
-          const card = this._helpers.createCardElement(cfg);
+          const card = this._helpers.createCardElement(expandedCfg);
           card.hass = this._hass;
           return card;
         } catch (e) {
@@ -773,9 +776,12 @@ class HemmaSmartRow extends HTMLElement {
     let budget = performance.now();
 
     for (let i = 0; i < this._config.cards.length; i++) {
-      const cfg = this._config.cards[i];
+      const rawCfg = this._config.cards[i];
+      const cfg = window.hemmaExpandedEntityConfig
+        ? window.hemmaExpandedEntityConfig(rawCfg)
+        : rawCfg;
       let card = null;
-      const off = isCardDisabled(cfg, this._scrollMode);
+      const off = isCardDisabled(rawCfg, this._scrollMode);
       if (!off) {
         try {
           card = this._helpers.createCardElement(cfg);
@@ -788,10 +794,10 @@ class HemmaSmartRow extends HTMLElement {
       wrapper.className = 'card-wrapper';
       wrapper.dataset.idx = String(i);
       wrapper.style.setProperty('--hemma-position-index', String(i));
-      if (cardFlag(cfg, 'full_width')) wrapper.dataset.fullwidth = '1';
-      if (isRawCard(cfg)) wrapper.dataset.raw = '1';
-      if (cardFlag(cfg, 'collapsed_spacer')) wrapper.dataset.collapsedSpacer = '1';
-      if (getCardSize(cfg) === 'large') {
+      if (cardFlag(rawCfg, 'full_width')) wrapper.dataset.fullwidth = '1';
+      if (isRawCard(rawCfg)) wrapper.dataset.raw = '1';
+      if (cardFlag(rawCfg, 'collapsed_spacer')) wrapper.dataset.collapsedSpacer = '1';
+      if (getCardSize(rawCfg) === 'large') {
         wrapper.dataset.size = 'large';
         this._scheduleLargeFill(wrapper);
       }
@@ -799,14 +805,14 @@ class HemmaSmartRow extends HTMLElement {
         wrapper.dataset.off = '1';
         wrapper.style.display = 'none';
         this._hiddenState[i] = true;
-      } else if (startsClosed(cfg)) {
+      } else if (startsClosed(rawCfg)) {
         wrapper.dataset.showWhen = '1';
         wrapper.style.display = 'none';
         this._hiddenState[i] = true;
       }
       wrapper.style.setProperty('--hemma-init-play', 'paused');
       if (card) wrapper.appendChild(card);
-      if (card && this._scrollMode && this._sortEnabled && !isRawCard(cfg)) this._tagPhone(card);
+      if (card && this._scrollMode && this._sortEnabled && !isRawCard(rawCfg)) this._tagPhone(card);
       container.appendChild(wrapper);
 
       this._cards.push(card);
