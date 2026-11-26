@@ -20,6 +20,8 @@
 
 Hemma turns Home Assistant into a home screen you actually want to look at. It builds a dashboard for your desktop, tablet and phone from the rooms and devices you already have, and **Hemma Studio** in the sidebar lets you shape it with a live preview. No YAML, ever.
 
+> **Tecnohead Hemma:** this repository is a separate Tecnohead derivation of Hemma. The original `tecnohead-display` project is not modified. See [TECNOHEAD-DERIVATION.md](TECNOHEAD-DERIVATION.md) for the project boundary and update strategy.
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/hero-dark.webp" />
