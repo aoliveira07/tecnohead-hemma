@@ -5067,7 +5067,7 @@ const saverXfade = (el, bg) => {
     .bg { position: absolute; inset: 0; background: #97a9ae; }
 ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover no-repeat; filter: blur(60px) saturate(1.3) brightness(.62); }
     .stg { position: absolute; left: 50%; top: 50%; width: 1180px; height: 820px; transform: translate(-50%, -50%) scale(var(--k, 1)); color: var(--ink); }
-    :host { --ink: #111; --sub: #3d4a50; --hi: #fff; --sec: #fff; --pill: rgba(0,0,0,0.12); }
+    :host { --ink: #111; --sub: #3d4a50; --hi: #fff; --sec: #fff; --pill: rgba(0,0,0,0.12); filter: saturate(1.12) brightness(1.06); }
     :host(.dk) { --ink: #fff; --sub: rgba(235,235,245,0.62); --sec: #FF9F0A; --pill: rgba(255,255,255,0.16); }
     .dt { position: absolute; left: 130px; top: 70px; width: 380px; text-align: center; }
     .dt .wd { font-size: 72px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; } .dt .wd b { color: var(--hi); } .dt .wd span { color: var(--sub); }
@@ -5114,23 +5114,24 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     .wx .cd, .wx .hl { font-size: 26px; font-weight: 500; } .wx i { margin: 10px 0 6px; width: 52px; height: 44px; }
     /* Tecnohead Today photo tile: compact, fixed in the landscape grid and
        fed by the backend sensor created by the Hemma photo synchroniser. */
-    .fam { position: absolute; left: 480px; top: 520px; width: 360px; padding: 18px; box-sizing: border-box; border: 1px solid rgba(255,255,255,0.22); border-radius: 26px; background: rgba(255,255,255,0.13); -webkit-backdrop-filter: blur(24px) saturate(1.25); backdrop-filter: blur(24px) saturate(1.25); box-shadow: 0 18px 36px -24px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.14); color: var(--ink); cursor: default; transition: opacity .42s ease, transform .42s cubic-bezier(0.32,0.72,0,1); }
+    .fam { position: absolute; left: 430px; top: 430px; width: 400px; height: 290px; padding: 0; box-sizing: border-box; overflow: hidden; border: 1px solid rgba(255,255,255,0.32); border-radius: 26px; background: rgba(255,255,255,0.16); -webkit-backdrop-filter: blur(24px) saturate(1.35); backdrop-filter: blur(24px) saturate(1.35); box-shadow: 0 20px 40px -24px rgba(0,0,0,0.82), inset 0 1px 0 rgba(255,255,255,0.24); color: #fff; cursor: default; transition: opacity .42s ease, transform .42s cubic-bezier(0.32,0.72,0,1); }
     .fam[hidden] { display: none; }
-    .fam .fh { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; min-width: 0; }
-    .fam .fh b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 23px; font-weight: 700; letter-spacing: -0.02em; }
-    .fam .fh span { flex: none; font-size: 15px; font-weight: 600; color: var(--sub); }
-    .fam .fp { position: relative; margin-top: 12px; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 18px; background: rgba(0,0,0,0.2); box-shadow: 0 8px 20px -14px rgba(0,0,0,0.75); }
-    .fam .fp img { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .5s ease; }
+    .fam .fp { position: absolute; inset: 0; margin: 0; overflow: hidden; border-radius: inherit; background: rgba(0,0,0,0.22); box-shadow: none; }
+    .fam .fp::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to bottom, rgba(0,0,0,0.54), rgba(0,0,0,0.03) 38%, rgba(0,0,0,0.04) 58%, rgba(0,0,0,0.56)); }
+    .fam .fp img { display: block; width: 100%; height: 100%; object-fit: fill; filter: saturate(1.08) brightness(1.05); opacity: 0; transition: opacity .5s ease; }
     .fam .fp img.ready { opacity: 1; }
-    .fam .fb { display: flex; align-items: center; justify-content: space-between; min-height: 18px; margin-top: 11px; }
-    .fam .fb small { font-size: 14px; font-weight: 600; color: var(--sub); }
+    .fam .fh { position: absolute; z-index: 2; left: 0; right: 0; top: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; min-width: 0; padding: 20px 20px 0; }
+    .fam .fh b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; text-shadow: 0 2px 12px rgba(0,0,0,0.45); }
+    .fam .fh span { flex: none; font-size: 15px; font-weight: 650; color: rgba(255,255,255,0.86); text-shadow: 0 2px 10px rgba(0,0,0,0.45); }
+    .fam .fb { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; min-height: 18px; margin: 0; padding: 0 20px 18px; }
+    .fam .fb small { font-size: 15px; font-weight: 650; color: rgba(255,255,255,0.92); text-shadow: 0 2px 10px rgba(0,0,0,0.45); }
     .fam .dots { display: flex; align-items: center; gap: 5px; }
-    .fam .dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--sub); opacity: .45; }
-    .fam .dots i.on { width: 7px; height: 7px; background: var(--hi); opacity: 1; }
+    .fam .dots i { width: 6px; height: 6px; border-radius: 50%; background: #fff; opacity: .58; }
+    .fam .dots i.on { width: 8px; height: 8px; background: #fff; opacity: 1; }
     .stg.family .gl { left: 76px; width: 350px; }
     .stg.family .fc, .stg.family .cal { left: 76px; width: 340px; }
     .stg.family .fc div { grid-template-columns: 76px 34px minmax(0, 1fr); gap: 10px; font-size: 22px; }
-    .stg.family .fam { left: 450px; }
+    .stg.family .fam { left: 430px; width: 400px; }
     .stg.family .wx { left: 855px; transform: scale(.76); transform-origin: top left; }
     :host(.pt) .stg.family .fam { left: 60px; top: 955px; width: 700px; }
     :host(.pt) .stg.family .gl { left: 60px; width: 340px; }
@@ -5358,7 +5359,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       <svg class="ck" viewBox="0 0 340 340">${ticks}${nums}${hand('hh', 92, 'var(--ink)')}${hand('mh', 140, 'var(--ink)')}<circle cx="170" cy="170" r="5.6" fill="none" style="stroke:var(--ink)" stroke-width="6"/><g class="sh"><line x1="170" y1="${170 + 4}" x2="170" y2="${170 + 28}" style="stroke:var(--sec)" stroke-width="2" stroke-linecap="round"/><line x1="170" y1="${170 - 4}" x2="170" y2="${170 - 160}" style="stroke:var(--sec)" stroke-width="2" stroke-linecap="round"/><circle cx="170" cy="170" r="4.3" fill="none" style="stroke:var(--sec)" stroke-width="3.4"/></g></svg>
       <div class="md" hidden><div class="ar"></div><div class="t"></div><div class="a"></div><button type="button" class="pl"></button></div>
       <div class="fc" hidden></div><div class="cal" hidden></div><div class="gl" hidden></div>
-      <div class="fam" hidden role="group" aria-label="Fotos da família"><div class="fh"><b>Fotos da família</b><span>Hoje</span></div><div class="fp"><img alt="Foto da família"></div><div class="fb"><span class="dots"></span></div></div>
+       <div class="fam" hidden role="group" aria-label="Fotos da família"><div class="fh"><b>Fotos da família</b></div><div class="fp"><img alt="Foto da família"></div><div class="fb"><small>Hoje</small><span class="dots"></span></div></div>
       <div class="wx" hidden><div class="c"><span></span><svg width="18" height="18" viewBox="0 0 16 16"><path d="M15 1 1 7l6 2 2 6z" style="fill:var(--hi)"/></svg></div><div class="tp"></div><i></i><div class="cd"></div><div class="hl"></div></div>
     </div>${o.np === 'keep' ? MINI_HTML : ''}<div class="dark"></div>`;
     stageFit(sr);

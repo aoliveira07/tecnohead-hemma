@@ -26,7 +26,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.storage import Store
-from PIL import Image, ImageEnhance, ImageFilter, ImageOps
+from PIL import Image, ImageEnhance, ImageOps
 
 from .const import (
     DEFAULT_IMMICH_ALBUM_ID,
@@ -251,29 +251,23 @@ class HemmaPhotoSync:
 
     @staticmethod
     def _normalize_image(source: bytes, destination: Path) -> None:
-        """Create a 1920x1080 landscape image while keeping the whole photo."""
+        """Create a vivid 1920x1080 image without cropping the source photo.
+
+        Today uses the photo as a full-bleed tile.  Stretching the complete
+        source into that fixed landscape canvas is intentional: it avoids the
+        blurred side panels and never removes a person or another part of the
+        original frame.  The small color/contrast lift keeps the result from
+        looking washed out on the kiosk display.
+        """
 
         with Image.open(BytesIO(source)) as opened:
             image = ImageOps.exif_transpose(opened).convert("RGB")
 
         target = (NORMALIZED_WIDTH, NORMALIZED_HEIGHT)
-        background = ImageOps.fit(
-            image,
-            target,
-            method=Image.Resampling.LANCZOS,
-            centering=(0.5, 0.5),
-        )
-        background = ImageEnhance.Brightness(
-            background.filter(ImageFilter.GaussianBlur(radius=28))
-        ).enhance(0.62)
-        canvas = background.convert("RGB")
-        foreground = image.copy()
-        foreground.thumbnail(target, Image.Resampling.LANCZOS)
-        position = (
-            (NORMALIZED_WIDTH - foreground.width) // 2,
-            (NORMALIZED_HEIGHT - foreground.height) // 2,
-        )
-        canvas.paste(foreground, position)
+        canvas = image.resize(target, Image.Resampling.LANCZOS)
+        canvas = ImageEnhance.Color(canvas).enhance(1.08)
+        canvas = ImageEnhance.Contrast(canvas).enhance(1.04)
+        canvas = ImageEnhance.Brightness(canvas).enhance(1.03)
 
         destination.parent.mkdir(parents=True, exist_ok=True)
         temporary = destination.with_suffix(destination.suffix + ".tmp")
