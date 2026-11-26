@@ -4680,7 +4680,7 @@ ${PILL_CSS}    @media (max-width: 768px) { .lpill { position: fixed; height: 52p
   const SAVER_GLOWS = keptMap('hemma_saver_glows', 24);
   const SAVER_ART = keptMap('hemma_saver_art', 48);
   const saverCss = `
-    :host { position: fixed; inset: 0; z-index: 2147483080; display: block; background: #000; color: #fff; font-family: var(--primary-font-family, var(--hemma-font, -apple-system, system-ui, sans-serif)); -webkit-user-select: none; user-select: none; }
+    :host { position: fixed; inset: 0; z-index: 2147483080; display: block; width: 100vw; height: 100vh; min-width: 100%; min-height: 100%; overflow: hidden; background: #000; color: #fff; font-family: var(--primary-font-family, var(--hemma-font, -apple-system, system-ui, sans-serif)); -webkit-user-select: none; user-select: none; }
     .clock { position: absolute; z-index: 5; left: max(36px, env(safe-area-inset-left, 0px)); top: max(30px, calc(env(safe-area-inset-top, 0px) + 12px)); pointer-events: none; text-shadow: 0 2px 20px rgba(0,0,0,0.35); }
     :host(.flat) .clock, :host(.flat) .lbl { text-shadow: none; }
     .clock b { display: block; font-size: 64px; font-weight: 700; letter-spacing: -0.025em; line-height: 1; font-variant-numeric: tabular-nums; }
@@ -5003,8 +5003,8 @@ const saverXfade = (el, bg) => {
     }
     return '';
   };
-  // The stage is drawn at the iPad's 1180 by 820 and scaled to fit the screen, so the layout holds on any size.
-  const stageFit = (sr) => { const f = () => { const pt = innerHeight > innerWidth * 1.1, k = pt ? Math.min(innerWidth / 820, innerHeight / 1180) : Math.min(innerWidth / 1180, innerHeight / 820); sr.host.classList.toggle('pt', pt); sr.host.style.setProperty('--k', k); }; f(); addEventListener('resize', f); SAVER.unfit = () => removeEventListener('resize', f); };
+  // Landscape fills the viewport exactly; portrait keeps the taller iPad-style stage and scales it to fit.
+  const stageFit = (sr) => { const f = () => { const pt = innerHeight > innerWidth * 1.1, k = pt ? Math.min(innerWidth / 820, innerHeight / 1180) : 1; sr.host.classList.toggle('pt', pt); sr.host.style.setProperty('--k', k); }; f(); addEventListener('resize', f); SAVER.unfit = () => removeEventListener('resize', f); };
   const CLOCK_BG = { '': '#97a9ae', sand: '#c8b9a2', sage: '#a3b29a', blue: '#93a7c2', rose: '#c6a9ad', lavender: '#afa9c9', sea: '#90b7b6', clay: '#cea796', plum: '#c0a0b4', honey: '#cab992', black: '#000' };
   const CLOUD_CSS = `
     .glows { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
@@ -5066,29 +5066,29 @@ const saverXfade = (el, bg) => {
   const CLOCK_CSS = `
     .bg { position: absolute; inset: 0; background: #97a9ae; }
 ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover no-repeat; filter: blur(60px) saturate(1.3) brightness(.62); }
-    .stg { position: absolute; left: 50%; top: 50%; width: 1180px; height: 820px; transform: translate(-50%, -50%) scale(var(--k, 1)); color: var(--ink); }
+    .stg { position: absolute; inset: 0; width: 100%; height: 100%; transform: none; color: var(--ink); }
     :host { --ink: #111; --sub: #3d4a50; --hi: #fff; --sec: #fff; --pill: rgba(0,0,0,0.12); filter: saturate(1.12) brightness(1.06); }
     :host(.dk) { --ink: #fff; --sub: rgba(235,235,245,0.62); --sec: #FF9F0A; --pill: rgba(255,255,255,0.16); }
-    .dt { position: absolute; left: 130px; top: 70px; width: 380px; text-align: center; }
+    .dt { position: absolute; left: 5%; top: 7%; width: 36%; text-align: left; }
     .dt .wd { font-size: 72px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; } .dt .wd b { color: var(--hi); } .dt .wd span { color: var(--sub); }
     .dt .n { font-size: 260px; font-weight: 700; line-height: .86; letter-spacing: -0.05em; margin-top: 6px; }
-    .ck { position: absolute; left: 720px; top: 60px; width: 340px; height: 340px; }
-    .md { position: absolute; left: 170px; top: 436px; width: 300px; cursor: pointer; }
+    .ck { position: absolute; left: auto; right: 7%; top: 6%; width: 320px; height: 320px; }
+    .md { position: absolute; left: 5%; top: 55%; width: 30%; cursor: pointer; }
     .md .ar { width: 180px; height: 180px; border-radius: 16px; background: rgba(255,255,255,0.15) center / cover no-repeat; }
     .md .t { margin-top: 14px; font-size: 22px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .md .a { font-size: 21px; color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .md .pl { margin-top: 12px; display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 26px 0 22px; border-radius: 26px; border: 0; background: var(--pill); color: var(--ink); font: inherit; font-size: 24px; font-weight: 500; cursor: pointer; }
     .md .pl svg { height: 18px; width: auto; display: block; }
-    .fc { position: absolute; left: 170px; top: 446px; display: grid; gap: 14px; }
+    .fc { position: absolute; left: 5%; top: 55%; display: grid; gap: 14px; }
     [hidden] { display: none !important; }
     .fc div { display: grid; grid-template-columns: 90px 44px auto; align-items: center; gap: 16px; font-size: 26px; font-weight: 500; }
     .fc i, .wx i { display: block; width: 40px; height: 34px; background: var(--ink); -webkit-mask: var(--i) center / contain no-repeat; mask: var(--i) center / contain no-repeat; }
-    .wx { position: absolute; left: 700px; top: 436px; }
+    .wx { position: absolute; left: 74%; top: 54%; }
     .dt, .ck, .wx { transition: left .6s cubic-bezier(0.32, 0.72, 0, 1); }
     .stg.still :is(.dt, .ck, .wx) { transition: none; }
-    .stg.wide .dt { left: 70px; } .stg.wide .ck { left: 780px; } .stg.wide .wx { left: 760px; }
+    .stg.wide .dt { left: 5%; } .stg.wide .ck { left: auto; right: 7%; } .stg.wide .wx { left: 74%; }
     .stg.wide .cal { left: 110px; width: 530px; }
-    :host(.pt) .stg { width: 820px; height: 1180px; }
+    :host(.pt) .stg { inset: 50% auto auto 50%; width: 820px; height: 1180px; transform: translate(-50%, -50%) scale(var(--k, 1)); }
     :host(.pt) .stg .dt, :host(.pt) .stg.wide .dt { left: 30px; top: 175px; } :host(.pt) .dt .wd { font-size: 65px; } :host(.pt) .dt .n { font-size: 234px; }
     :host(.pt) .stg .ck, :host(.pt) .stg.wide .ck { left: 440px; top: 155px; width: 320px; height: 320px; }
     /* Upright, the media (or forecast, or Home at a glance) sits beside the weather as in landscape; the calendar takes the full width under it. */
@@ -5097,7 +5097,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     :host(.pt) .stg.wide .wx { left: 60px; top: 575px; display: grid; grid-template-columns: auto auto; grid-template-areas: "c ." "tp i" "tp cd" "tp hl"; column-gap: 36px; align-items: end; }
     :host(.pt) .stg.wide .wx .c { grid-area: c; } :host(.pt) .stg.wide .wx .tp { grid-area: tp; align-self: end; } :host(.pt) .stg.wide .wx i { grid-area: i; margin: 0 0 6px; width: 48px; height: 40px; } :host(.pt) .stg.wide .wx .cd { grid-area: cd; } :host(.pt) .stg.wide .wx .hl { grid-area: hl; padding-bottom: 18px; }
     :host(.pt) .stg .cal, :host(.pt) .stg.wide .cal { left: 60px; top: 845px; width: 700px; }
-    .cal, .gl { position: absolute; left: 170px; top: 446px; width: 460px; display: grid; gap: 20px; }
+    .cal, .gl { position: absolute; left: 5%; top: 55%; width: 34%; display: grid; gap: 20px; }
     .cal .hd, .gl > div { display: flex; align-items: center; gap: 14px; font-size: 38px; font-weight: 600; line-height: 1.1; min-width: 0; }
     .cal .hd i, .gl i { flex: none; width: 52px; height: 52px; border-radius: 50%; background: var(--hi); display: grid; place-items: center; }
     :host(.dk) .cal .hd i, :host(.dk) .gl i { background: rgba(255,255,255,0.16); }
@@ -5114,25 +5114,25 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     .wx .cd, .wx .hl { font-size: 26px; font-weight: 500; } .wx i { margin: 10px 0 6px; width: 52px; height: 44px; }
     /* Tecnohead Today photo tile: compact, fixed in the landscape grid and
        fed by the backend sensor created by the Hemma photo synchroniser. */
-    .fam { position: absolute; left: 430px; top: 430px; width: 400px; height: 290px; padding: 0; box-sizing: border-box; overflow: hidden; border: 1px solid rgba(255,255,255,0.32); border-radius: 26px; background: rgba(255,255,255,0.16); -webkit-backdrop-filter: blur(24px) saturate(1.35); backdrop-filter: blur(24px) saturate(1.35); box-shadow: 0 20px 40px -24px rgba(0,0,0,0.82), inset 0 1px 0 rgba(255,255,255,0.24); color: #fff; cursor: default; transition: opacity .42s ease, transform .42s cubic-bezier(0.32,0.72,0,1); }
+    .fam { position: absolute; left: 36%; top: 54%; width: 36%; height: 35%; padding: 0; box-sizing: border-box; overflow: hidden; border: 1px solid rgba(255,255,255,0.32); border-radius: 26px; background: rgba(255,255,255,0.16); -webkit-backdrop-filter: blur(24px) saturate(1.35); backdrop-filter: blur(24px) saturate(1.35); box-shadow: 0 20px 40px -24px rgba(0,0,0,0.82), inset 0 1px 0 rgba(255,255,255,0.24); color: #fff; cursor: default; transition: opacity .42s ease, transform .42s cubic-bezier(0.32,0.72,0,1); }
     .fam[hidden] { display: none; }
     .fam .fp { position: absolute; inset: 0; margin: 0; overflow: hidden; border-radius: inherit; background: rgba(0,0,0,0.22); box-shadow: none; }
-    .fam .fp::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to bottom, rgba(0,0,0,0.54), rgba(0,0,0,0.03) 38%, rgba(0,0,0,0.04) 58%, rgba(0,0,0,0.56)); }
+    .fam .fp::after { content: none; }
     .fam .fp img { display: block; width: 100%; height: 100%; object-fit: fill; filter: saturate(1.08) brightness(1.05); opacity: 0; transition: opacity .5s ease; }
     .fam .fp img.ready { opacity: 1; }
-    .fam .fh { position: absolute; z-index: 2; left: 0; right: 0; top: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; min-width: 0; padding: 20px 20px 0; }
+    .fam .fh { display: none; }
     .fam .fh b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; text-shadow: 0 2px 12px rgba(0,0,0,0.45); }
     .fam .fh span { flex: none; font-size: 15px; font-weight: 650; color: rgba(255,255,255,0.86); text-shadow: 0 2px 10px rgba(0,0,0,0.45); }
-    .fam .fb { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; min-height: 18px; margin: 0; padding: 0 20px 18px; }
-    .fam .fb small { font-size: 15px; font-weight: 650; color: rgba(255,255,255,0.92); text-shadow: 0 2px 10px rgba(0,0,0,0.45); }
+    .fam .fb { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: flex-end; min-height: 18px; margin: 0; padding: 0 18px 14px; }
+    .fam .fb small { display: none; }
     .fam .dots { display: flex; align-items: center; gap: 5px; }
     .fam .dots i { width: 6px; height: 6px; border-radius: 50%; background: #fff; opacity: .58; }
     .fam .dots i.on { width: 8px; height: 8px; background: #fff; opacity: 1; }
-    .stg.family .gl { left: 76px; width: 350px; }
-    .stg.family .fc, .stg.family .cal { left: 76px; width: 340px; }
+    .stg.family .gl { left: 5%; width: 31%; }
+    .stg.family .fc, .stg.family .cal { left: 5%; width: 30%; }
     .stg.family .fc div { grid-template-columns: 76px 34px minmax(0, 1fr); gap: 10px; font-size: 22px; }
-    .stg.family .fam { left: 430px; width: 400px; }
-    .stg.family .wx { left: 855px; transform: scale(.76); transform-origin: top left; }
+    .stg.family .fam { left: 36%; top: 54%; width: 36%; height: 35%; }
+    .stg.family .wx { left: 74%; top: 54%; transform: scale(.76); transform-origin: top left; }
     :host(.pt) .stg.family .fam { left: 60px; top: 955px; width: 700px; }
     :host(.pt) .stg.family .gl { left: 60px; width: 340px; }
     :host(.pt) .stg.family .wx { left: 470px; transform: scale(.58); }
@@ -5359,7 +5359,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       <svg class="ck" viewBox="0 0 340 340">${ticks}${nums}${hand('hh', 92, 'var(--ink)')}${hand('mh', 140, 'var(--ink)')}<circle cx="170" cy="170" r="5.6" fill="none" style="stroke:var(--ink)" stroke-width="6"/><g class="sh"><line x1="170" y1="${170 + 4}" x2="170" y2="${170 + 28}" style="stroke:var(--sec)" stroke-width="2" stroke-linecap="round"/><line x1="170" y1="${170 - 4}" x2="170" y2="${170 - 160}" style="stroke:var(--sec)" stroke-width="2" stroke-linecap="round"/><circle cx="170" cy="170" r="4.3" fill="none" style="stroke:var(--sec)" stroke-width="3.4"/></g></svg>
       <div class="md" hidden><div class="ar"></div><div class="t"></div><div class="a"></div><button type="button" class="pl"></button></div>
       <div class="fc" hidden></div><div class="cal" hidden></div><div class="gl" hidden></div>
-       <div class="fam" hidden role="group" aria-label="Fotos da família"><div class="fh"><b>Fotos da família</b></div><div class="fp"><img alt="Foto da família"></div><div class="fb"><small>Hoje</small><span class="dots"></span></div></div>
+       <div class="fam" hidden role="group" aria-label="Fotos"><div class="fp"><img alt="Foto"></div><div class="fb"><span class="dots"></span></div></div>
       <div class="wx" hidden><div class="c"><span></span><svg width="18" height="18" viewBox="0 0 16 16"><path d="M15 1 1 7l6 2 2 6z" style="fill:var(--hi)"/></svg></div><div class="tp"></div><i></i><div class="cd"></div><div class="hl"></div></div>
     </div>${o.np === 'keep' ? MINI_HTML : ''}<div class="dark"></div>`;
     stageFit(sr);
