@@ -900,7 +900,7 @@ hemma_entity:
             const desktop = window.matchMedia
               && window.matchMedia('(min-width: 768px) and (min-height: 601px)').matches;
             return expanded && desktop
-              ? '220px'
+              ? '180px'
               : 'var(--hemma-entity-height-current, var(--hemma-entity-height-desktop, 200px))';
           ]]]
       - --hemma-entity-icon-size-current: |
@@ -909,7 +909,7 @@ hemma_entity:
             const desktop = window.matchMedia
               && window.matchMedia('(min-width: 768px) and (min-height: 601px)').matches;
             return expanded && desktop
-              ? '48px'
+              ? '36px'
               : 'var(--hemma-entity-icon-size-desktop, 34px)';
           ]]]
       - --hemma-entity-name-font-current: |
@@ -918,7 +918,7 @@ hemma_entity:
             const desktop = window.matchMedia
               && window.matchMedia('(min-width: 768px) and (min-height: 601px)').matches;
             return expanded && desktop
-              ? '20px'
+              ? '17px'
               : 'var(--hemma-entity-name-font-desktop, 18px)';
           ]]]
       - --hemma-entity-state-font-current: |
@@ -927,7 +927,7 @@ hemma_entity:
             const desktop = window.matchMedia
               && window.matchMedia('(min-width: 768px) and (min-height: 601px)').matches;
             return expanded && desktop
-              ? '16px'
+              ? '14px'
               : 'var(--hemma-entity-state-font-desktop, 15px)';
           ]]]
       - background-color: var(--hemma-entity-background)
