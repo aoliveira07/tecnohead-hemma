@@ -96,6 +96,20 @@ class HemmaPhotoSync:
         self._manifest["photos"] = photos if isinstance(photos, list) else []
         self._loaded = True
 
+    def reset_after_setup_error(self, detail: str) -> None:
+        """Leave the dashboard usable when an old cache cannot be read."""
+        self._manifest = {
+            "photos": [],
+            "format_version": PHOTO_FORMAT_VERSION,
+            "synced_at": None,
+            "error": f"Cache de fotos indisponível: {detail[:240]}",
+        }
+        self._loaded = True
+
+    def record_setup_error(self, detail: str) -> None:
+        """Keep a startup failure visible without taking down Hemma."""
+        self._manifest["error"] = f"Sincronização de fotos indisponível: {detail[:240]}"
+
     async def async_start(self) -> None:
         await self.async_initialize()
         self._timer_unsub = async_track_time_interval(

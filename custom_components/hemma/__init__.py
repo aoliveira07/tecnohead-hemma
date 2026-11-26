@@ -26,6 +26,7 @@ from .const import (
     PANEL_ICON,
     PANEL_URL,
     PHOTO_DATA_KEY,
+    PHOTO_SENSOR_MARKER,
     SCRIPTS_DIR,
     SCRIPTS_URL_BASE,
     SHARED_SCRIPTS,
@@ -212,10 +213,45 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Keep the Yumi Fotos/Immich key and manifest in the integration backend.
     # The dashboard receives only normalized /local URLs through the sensor.
     photo_manager = manager_from_entry(hass, entry)
-    await photo_manager.async_initialize()
     hass.data[PHOTO_DATA_KEY] = photo_manager
-    await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
-    await photo_manager.async_start()
+    sensor_platform_loaded = False
+    try:
+        await photo_manager.async_initialize()
+    except Exception as exc:
+        _LOGGER.exception("Hemma: photo cache could not be initialized; starting empty")
+        photo_manager.reset_after_setup_error(str(exc))
+    try:
+        await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
+        sensor_platform_loaded = True
+    except Exception:
+        _LOGGER.exception("Hemma: photo sensor platform could not be loaded")
+    try:
+        await photo_manager.async_start()
+    except Exception as exc:
+        _LOGGER.exception("Hemma: photo sync could not be started")
+        photo_manager.record_setup_error(str(exc))
+
+    fallback_unsub = None
+    if not sensor_platform_loaded:
+        def _write_photo_fallback() -> None:
+            data = photo_manager.state()
+            hass.states.async_set(
+                "sensor.fotos_da_familia",
+                data["count"],
+                {
+                    PHOTO_SENSOR_MARKER: True,
+                    "photos": data["photos"],
+                    "count": data["count"],
+                    "configured": data["configured"],
+                    "synced_at": data["synced_at"],
+                    "error": data["error"],
+                    "interval_seconds": data["interval_seconds"],
+                },
+            )
+
+        fallback_unsub = photo_manager.subscribe(_write_photo_fallback)
+        entry.async_on_unload(fallback_unsub)
+        _write_photo_fallback()
 
     async def _sync_photos(_call) -> None:
         await photo_manager.async_sync(force=True)
