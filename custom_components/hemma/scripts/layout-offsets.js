@@ -217,6 +217,16 @@
     if (px === lastExtras) return;
     lastExtras = px;
     html.style.setProperty('--hemma-extras-h', px + 'px');
+    // Touch displays keep the room hero fixed when there is no content below
+    // it. Once a standalone card is placed after the smart row, however, a
+    // fixed 100vh hero paints over that card. Switch the hero back into normal
+    // flow and give it the exact remaining viewport height so the extra card
+    // stays visible without making the dashboard scroll.
+    var hasExtras = px > 0;
+    html.style.setProperty('--hemma-room-card-position', hasExtras ? 'relative' : 'fixed');
+    html.style.setProperty('--hemma-room-card-height', hasExtras ? 'calc(100svh - ' + px + 'px)' : '100dvh');
+    html.style.setProperty('--hemma-room-card-min-height', hasExtras ? '0px' : '100dvh');
+    html.style.setProperty('--hemma-room-card-max-height', hasExtras ? 'none' : '100dvh');
   }
 
   function setHeaderTop(px) {

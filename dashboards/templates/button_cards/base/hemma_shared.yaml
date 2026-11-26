@@ -313,11 +313,11 @@ hemma_shared:
         overscroll-behavior: none !important;
       }
       :host ha-card {
-        position: fixed !important;
+        position: var(--hemma-room-card-position, fixed) !important;
         inset: 0 !important;
-        height: 100dvh !important;
-        min-height: 100dvh !important;
-        max-height: 100dvh !important;
+        height: var(--hemma-room-card-height, 100dvh) !important;
+        min-height: var(--hemma-room-card-min-height, 100dvh) !important;
+        max-height: var(--hemma-room-card-max-height, 100dvh) !important;
         overflow: hidden !important;
         touch-action: none !important;
         overscroll-behavior: none !important;
