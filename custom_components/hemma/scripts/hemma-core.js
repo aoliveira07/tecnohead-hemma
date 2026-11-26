@@ -8839,7 +8839,10 @@ window.hemmaMenuGlass = {
           .cat.room .cat-chipcard { margin-top: 14px; }
           .cat-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-            grid-auto-rows: 72px; grid-auto-flow: row dense; gap: 10px;
+            /* Expanded entity tiles are 160px tall. Two 75px tracks plus the
+               10px row gap gives them an exact two-row slot, so a following
+               row cannot paint through the bottom of the tile. */
+            grid-auto-rows: 75px; grid-auto-flow: row dense; gap: 10px;
             --hemma-entity-inner-pad-current: 10px;
             --hemma-entity-name-font-current: 14px;
             --hemma-entity-state-font-current: 14px;
@@ -8858,12 +8861,12 @@ window.hemmaMenuGlass = {
           }
           .cat.compact .cat-grid {
             grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
-            grid-auto-rows: 62px; --hemma-entity-inner-pad-current: 8px; --hemma-entity-icon-size-current: 28px;
+            grid-auto-rows: 75px; --hemma-entity-inner-pad-current: 8px; --hemma-entity-icon-size-current: 28px;
             --hemma-entity-name-font-current: 13px; --hemma-entity-state-font-current: 13px;
           }
           .cat.compact .cat-grid > [data-hemma-size="large"] { --hemma-entity-inner-pad-current: 10px; }
-          :host(.hv) .cat-grid { grid-auto-rows: 76px; --hemma-entity-name-font-current: 15px; --hemma-entity-state-font-current: 15px; }
-          :host(.hv) .cat.compact .cat-grid { grid-auto-rows: 66px; --hemma-entity-name-font-current: 15px; --hemma-entity-state-font-current: 15px; --hemma-entity-icon-size-current: 30px; }
+          :host(.hv) .cat-grid { grid-auto-rows: 75px; --hemma-entity-name-font-current: 15px; --hemma-entity-state-font-current: 15px; }
+          :host(.hv) .cat.compact .cat-grid { grid-auto-rows: 75px; --hemma-entity-name-font-current: 15px; --hemma-entity-state-font-current: 15px; --hemma-entity-icon-size-current: 30px; }
           :host(.hv) :is(.cat-pills, .cat-chipcard) { --badge-font-size-current: 16px !important; --badge-font-size-tablet: 16px; --badge-icon-size-current: 40px !important; --badge-icon-size-tablet: 40px; --hv-bi-size: 40px; --hemma-badge-icon-override: 40px; --badge-col-gap-current: 11px !important; --badge-min-height-current: 46px !important; }
           :host(.hv.compact) :is(.cat-pills, .cat-chipcard) { --badge-icon-size-current: 38px !important; --hv-bi-size: 38px; --hemma-badge-icon-override: 38px; --badge-col-gap-current: 10px !important; --badge-min-height-current: 44px !important; }
           :host(.hv) .cat-pills { --badge-padding-current: 7px 18px 8px 7px !important; --badge-padding-tablet: 7px 18px 8px 7px; }
