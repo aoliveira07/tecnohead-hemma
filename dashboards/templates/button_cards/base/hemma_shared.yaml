@@ -172,6 +172,18 @@ hemma_shared:
       opacity: 0.9;
     }
 
+    /* A standalone card below the smart row must not sit behind the hero.
+       The attribute is set by layout-offsets.js after the extra card is
+       discovered, including the first paint while its wrapper is measuring. */
+    :host([data-hemma-has-extras]) ha-card{
+      position: relative !important;
+      inset: 0 !important;
+      height: calc(100svh - var(--hemma-extras-h, 0px)) !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      overflow: hidden !important;
+    }
+
     /* Mobile */
     @media (max-width: 767px), (max-height: 500px){
       :host{

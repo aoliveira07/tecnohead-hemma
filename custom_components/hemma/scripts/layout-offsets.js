@@ -144,6 +144,15 @@
   function findActiveEntityRow() { return keep('row', walkEntityRow); }
   function findNavbar() { return keep('nav', walkNavbar); }
 
+  function setHeroExtrasAttribute(hasExtras) {
+    var stack = findRoomHeaderStack();
+    if (!stack || !stack.getRootNode) return;
+    var root = stack.getRootNode();
+    var host = root && root.host;
+    if (!host || !host.toggleAttribute) return;
+    host.toggleAttribute('data-hemma-has-extras', !!hasExtras);
+  }
+
   function walkHeaderStack() {
     var found = [];
     walkFind(document, '#badges_media', found, 0);
@@ -195,34 +204,41 @@
     }
     if (!node.parentElement) return 0;
     var kids = node.parentElement.children;
-    var total = 0, seen = false;
+    var total = 0, seen = false, extraCount = 0;
     for (var i = 0; i < kids.length; i++) {
       if (kids[i] === node) { seen = true; continue; }
       if (!seen) continue;
+      extraCount++;
       var r = kids[i].getBoundingClientRect();
-      if (r.height <= 0) continue;
-      total += r.height;
+      var height = r.height;
       // The gap a card sits in counts too, or the view is short by it.
       try {
         var cs = getComputedStyle(kids[i]);
-        total += (parseFloat(cs.marginTop) || 0) + (parseFloat(cs.marginBottom) || 0);
+        if (height <= 0) height = parseFloat(cs.height) || 0;
+        total += height + (parseFloat(cs.marginTop) || 0) + (parseFloat(cs.marginBottom) || 0);
       } catch (e) {}
     }
-    return total;
+    // Home Assistant can report a zero wrapper height for a custom card while
+    // its shadow card is still being built. Keep the hero from covering the
+    // extra card during that first layout pass; the next ResizeObserver pass
+    // replaces this conservative estimate with the measured height.
+    return total > 0 ? total : (extraCount ? extraCount * 380 : 0);
   }
 
   function applyExtras() {
     if (!isDesktopOrTablet()) return;
     var px = Math.round(extrasHeight());
-    if (px === lastExtras) return;
-    lastExtras = px;
-    html.style.setProperty('--hemma-extras-h', px + 'px');
+    var hasExtras = px > 0;
+    if (px !== lastExtras) {
+      lastExtras = px;
+      html.style.setProperty('--hemma-extras-h', px + 'px');
+    }
+    setHeroExtrasAttribute(hasExtras);
     // Touch displays keep the room hero fixed when there is no content below
     // it. Once a standalone card is placed after the smart row, however, a
     // fixed 100vh hero paints over that card. Switch the hero back into normal
     // flow and give it the exact remaining viewport height so the extra card
     // stays visible without making the dashboard scroll.
-    var hasExtras = px > 0;
     html.style.setProperty('--hemma-room-card-position', hasExtras ? 'relative' : 'fixed');
     html.style.setProperty('--hemma-room-card-height', hasExtras ? 'calc(100svh - ' + px + 'px)' : '100dvh');
     html.style.setProperty('--hemma-room-card-min-height', hasExtras ? '0px' : '100dvh');
