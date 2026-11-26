@@ -144,11 +144,94 @@
   function findActiveEntityRow() { return keep('row', walkEntityRow); }
   function findNavbar() { return keep('nav', walkNavbar); }
 
+  // button-card renders the room hero inside a shadow root.  The element that
+  // owns the hero styles is therefore not always root.host itself; depending
+  // on the Home Assistant/card-mod version there can be one or more custom
+  // element hosts between the header stack and the room card.  Resolve that
+  // chain explicitly so extra cards can never end up underneath a fixed hero.
+  function configTemplates(el) {
+    var cfg = el && (el._config || el.config);
+    var value = cfg && cfg.template;
+    return Array.isArray(value) ? value : [value];
+  }
+
+  function isRoomHost(el) {
+    if (!el) return false;
+    if (el.classList && el.classList.contains('hemma-room')) return true;
+    return configTemplates(el).some(function (template) {
+      return String(template || '').indexOf('hemma_room') !== -1;
+    });
+  }
+
+  function hostChain(el) {
+    var chain = [];
+    var node = el;
+    var guard = 0;
+    while (node && guard++ < 24) {
+      if (chain.indexOf(node) === -1) chain.push(node);
+      var root = node.getRootNode ? node.getRootNode() : null;
+      var host = root && root.host;
+      if (host && host !== node) {
+        node = host;
+      } else {
+        node = node.parentElement;
+      }
+    }
+    return chain;
+  }
+
+  function findRoomCardHost(stack) {
+    if (!stack) return null;
+    var chain = hostChain(stack);
+    for (var i = 0; i < chain.length; i++) {
+      if (isRoomHost(chain[i])) return chain[i];
+    }
+    var root = stack.getRootNode ? stack.getRootNode() : null;
+    return root && root.host ? root.host : null;
+  }
+
+  function isVehicleCard(el) {
+    if (!el) return false;
+    var templates = configTemplates(el);
+    if (templates.some(function (template) {
+      return String(template || '').indexOf('hemma_vehicle') !== -1;
+    })) return true;
+    var cfg = el._config || el.config || {};
+    var variables = cfg.variables || {};
+    return !!(variables.vehicle_make || variables.vehicle_model || variables.entity_battery);
+  }
+
+  function findVehicleCards() {
+    var found = [];
+    walkFind(document, 'button-card', found, 0);
+    return found.filter(function (el, index, list) {
+      return list.indexOf(el) === index && isVehicleCard(el) && isVisible(el);
+    });
+  }
+
+  function vehicleExtrasHeight() {
+    var cards = findVehicleCards();
+    var total = 0;
+    for (var i = 0; i < cards.length; i++) {
+      var card = cards[i];
+      var rect = card.getBoundingClientRect();
+      var height = rect.height;
+      try {
+        var cs = getComputedStyle(card);
+        if (height <= 0) height = parseFloat(cs.height) || 0;
+        height += (parseFloat(cs.marginTop) || 0) + (parseFloat(cs.marginBottom) || 0);
+      } catch (e) {}
+      // hemma_vehicle has a 360px design height.  Keep that minimum while
+      // the custom element is still settling its shadow DOM.
+      total += Math.max(320, height || 0);
+    }
+    return total;
+  }
+
   function setHeroExtrasAttribute(hasExtras) {
     var stack = findRoomHeaderStack();
-    if (!stack || !stack.getRootNode) return;
-    var root = stack.getRootNode();
-    var host = root && root.host;
+    if (!stack) return;
+    var host = findRoomCardHost(stack);
     if (!host || !host.toggleAttribute) return;
     host.toggleAttribute('data-hemma-has-extras', !!hasExtras);
   }
@@ -202,6 +285,13 @@
   // the viewport and the whole dashboard scrolls.
   var lastExtras = -1;
   function extrasHeight() {
+    // The vehicle card is a standalone card after the room hero.  It lives
+    // outside the hero's shadow root, so sibling walking cannot see it.  Use
+    // its measured height directly; this is also stable when the row changes
+    // state and prevents the card from being painted behind the hero.
+    var vehicleHeight = vehicleExtrasHeight();
+    if (vehicleHeight > 0) return vehicleHeight;
+
     var row = findActiveEntityRow();
     if (!row) return 0;
     var node = row;
