@@ -1,0 +1,214 @@
+hemma_vehicle:
+  template:
+    - hemma_entity
+
+  # A vehicle tile is deliberately data-driven. Keep the battery sensor as the
+  # card entity, and point the remaining values at the entities exposed by the
+  # vehicle integration. Optional lists may be empty when a model/integration
+  # does not expose a particular sensor.
+  variables:
+    mobile_filter_category: unfiltered
+    icon: car
+    vehicle_make: Volvo
+    vehicle_model: EX40
+    vehicle_location: Garagem · Externo Frente
+    entity_battery: null
+    entity_range: null
+    entity_odometer: null
+    entity_charging_state: null
+    entity_connection: null
+    entity_lock: null
+    entity_climate_start: null
+    entity_climate_stop: null
+    door_entities: []
+    window_entities: []
+    alert_entities: []
+    size: large
+
+  show_name: false
+  show_state: false
+  show_icon: false
+  show_entity_picture: false
+
+  tap_action:
+    action: more-info
+    entity: '[[[ return variables.entity_battery || entity?.entity_id; ]]]'
+
+  hold_action:
+    action: more-info
+    entity: '[[[ return variables.entity_lock || variables.entity_battery || entity?.entity_id; ]]]'
+
+  custom_fields:
+    vehicle_body: |
+      [[[ 
+        const q = (v) => JSON.stringify(String(v ?? ''));
+        const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+        const get = (id) => id ? states[id] : null;
+        const valid = (s) => s && !['unknown', 'unavailable', 'none', ''].includes(String(s.state).toLowerCase());
+        const stateOf = (id, fallback = '—') => {
+          const s = get(id);
+          return valid(s) ? String(s.state) : fallback;
+        };
+        const numOf = (id) => {
+          const n = Number(get(id)?.state);
+          return Number.isFinite(n) ? n : null;
+        };
+        const unitOf = (id, fallback = '') => String(get(id)?.attributes?.unit_of_measurement || fallback);
+        const fmt = (n, maximumFractionDigits = 0) => {
+          if (!Number.isFinite(n)) return '—';
+          return new Intl.NumberFormat('pt-BR', { maximumFractionDigits }).format(n);
+        };
+        const percentage = numOf(variables.entity_battery);
+        const battery = percentage == null ? '—' : `${fmt(percentage)}%`;
+        const batteryPct = Math.max(0, Math.min(100, percentage == null ? 0 : percentage));
+        const range = numOf(variables.entity_range);
+        const rangeText = range == null ? '—' : `${fmt(range)} ${unitOf(variables.entity_range, 'km')}`;
+        const odo = numOf(variables.entity_odometer);
+        const odoText = odo == null ? '—' : `${fmt(odo)} ${unitOf(variables.entity_odometer, 'km')}`;
+
+        const mapState = (raw, values, fallback = '—') => {
+          const key = String(raw || '').toLowerCase().replace(/[áàãâ]/g, 'a').replace(/[éê]/g, 'e').replace(/[í]/g, 'i').replace(/[óôõ]/g, 'o').replace(/[ú]/g, 'u');
+          return values[key] || (raw && raw !== '—' ? raw : fallback);
+        };
+        const connection = mapState(stateOf(variables.entity_connection), {
+          on: 'Conectado', connected: 'Conectado', available: 'Conectado',
+          off: 'Desconectado', disconnected: 'Desconectado'
+        }, 'Sem comunicação');
+        const charging = mapState(stateOf(variables.entity_charging_state), {
+          charging: 'Carregando', active: 'Carregando', in_progress: 'Carregando',
+          complete: 'Completo', completed: 'Completo',
+          idle: 'Parado', inactive: 'Parado', stopped: 'Parado', off: 'Parado'
+        }, 'Indisponível');
+        const lockState = String(stateOf(variables.entity_lock)).toLowerCase();
+        const locked = ['locked', 'locking'].includes(lockState);
+        const lockText = locked ? 'Trancado' : lockState === 'unlocked' || lockState === 'unlocking' ? 'Destrancado' : '—';
+
+        const statusFor = (ids, openWords = ['on', 'open', 'opening']) => {
+          const list = Array.isArray(ids) ? ids.filter(Boolean) : (ids ? [ids] : []);
+          const open = list.filter((id) => openWords.includes(String(get(id)?.state || '').toLowerCase()));
+          return { list, open, any: open.length > 0 };
+        };
+        const doors = statusFor(variables.door_entities);
+        const windows = statusFor(variables.window_entities);
+        const alerts = statusFor(variables.alert_entities, ['on', 'open', 'problem', 'alert']);
+        const doorsText = !doors.list.length ? '—' : doors.any ? `${doors.open.length} aberta${doors.open.length === 1 ? '' : 's'}` : 'Fechadas';
+        const windowsText = !windows.list.length ? '—' : windows.any ? `${windows.open.length} aberta${windows.open.length === 1 ? '' : 's'}` : 'Fechados';
+        const alertText = !alerts.list.length ? 'Sem alertas' : alerts.any ? 'Verificar veículo' : 'Sem alertas';
+        const warning = doors.any || windows.any || alerts.any;
+
+        const stop = 'event.stopPropagation();event.stopImmediatePropagation();';
+        const call = (domain, service, id) => id
+          ? `${stop}document.querySelector("home-assistant")?.hass.callService(${q(domain)},${q(service)},{entity_id:${q(id)}})`
+          : '';
+        const actionButton = (label, icon, domain, service, id, tone = '') => id
+          ? `<button class="hv-action ${tone}" type="button" onclick='${call(domain, service, id)}' onpointerdown='${stop}'><ha-icon icon="${esc(icon)}"></ha-icon><span>${esc(label)}</span></button>`
+          : '';
+        const chip = (icon, label, value, tone = '') => `<span class="hv-chip ${tone}"><ha-icon icon="${esc(icon)}"></ha-icon><span><b>${esc(label)}</b><small>${esc(value)}</small></span></span>`;
+
+        return `
+          <div class="hv-shell">
+            <div class="hv-topline">
+              <span class="hv-brand">${esc(variables.vehicle_make || 'Volvo')}</span>
+              <span class="hv-connection ${connection === 'Conectado' ? 'online' : ''}"><i></i>${esc(connection)}</span>
+            </div>
+            <div class="hv-heading">
+              <div class="hv-heading-copy">
+                <small>CARRO ELÉTRICO</small>
+                <strong>${esc(variables.vehicle_make || 'Volvo')} ${esc(variables.vehicle_model || 'EX40')}</strong>
+                <span>${esc(variables.vehicle_location || 'Garagem')}</span>
+              </div>
+              <div class="hv-car" aria-hidden="true"><ha-icon icon="mdi:car-electric"></ha-icon></div>
+            </div>
+            <div class="hv-battery-row">
+              <div><b>${esc(battery)}</b><span>Bateria</span></div>
+              <div><b>${esc(rangeText)}</b><span>Autonomia</span></div>
+            </div>
+            <div class="hv-battery-track" aria-label="Bateria"><span style="width:${batteryPct}%"></span></div>
+            <div class="hv-stats">
+              <div><small>Odômetro</small><b>${esc(odoText)}</b></div>
+              <div><small>Carregamento</small><b>${esc(charging)}</b></div>
+              <div><small>Conexão</small><b>${esc(connection)}</b></div>
+            </div>
+            <div class="hv-chips">
+              ${chip('mdi:car-door', 'Portas', doorsText, doors.any ? 'warn' : '')}
+              ${chip('mdi:car-door', 'Vidros', windowsText, windows.any ? 'warn' : '')}
+              ${chip(locked ? 'mdi:lock' : 'mdi:lock-open-variant', 'Segurança', lockText, locked ? '' : 'warn')}
+              ${chip(alerts.any ? 'mdi:alert-circle-outline' : 'mdi:check-circle-outline', 'Alertas', alertText, warning ? 'warn' : 'ok')}
+            </div>
+            <div class="hv-actions">
+              ${actionButton('Climatizar', 'mdi:fan', 'button', 'press', variables.entity_climate_start, 'climate')}
+              ${actionButton('Trancar', 'mdi:lock', 'lock', 'lock', variables.entity_lock)}
+              ${actionButton('Destrancar', 'mdi:lock-open-variant', 'lock', 'unlock', variables.entity_lock)}
+            </div>
+          </div>`;
+      ]]]
+
+  extra_styles: |
+    .hv-shell { box-sizing:border-box; height:100%; min-height:320px; padding:20px 22px 18px; display:flex; flex-direction:column; gap:12px; color:var(--primary-text-color); font-family:inherit; overflow:hidden; }
+    .hv-topline { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .hv-brand { font-size:13px; font-weight:800; letter-spacing:.22em; opacity:.78; }
+    .hv-connection { display:inline-flex; align-items:center; gap:7px; padding:5px 10px; border:1px solid rgba(255,255,255,.18); border-radius:999px; font-size:12px; font-weight:650; color:var(--secondary-text-color); white-space:nowrap; }
+    .hv-connection i { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,.42); box-shadow:0 0 0 3px rgba(255,255,255,.07); }
+    .hv-connection.online { color:var(--hemma-color-green,#30D158); border-color:rgba(48,209,88,.30); }
+    .hv-connection.online i { background:var(--hemma-color-green,#30D158); box-shadow:0 0 0 3px rgba(48,209,88,.12); }
+    .hv-heading { display:flex; align-items:center; justify-content:space-between; min-height:66px; gap:12px; }
+    .hv-heading-copy { min-width:0; display:flex; flex-direction:column; gap:3px; }
+    .hv-heading-copy small { color:var(--hemma-color-orange,#ff9230); font-size:10px; font-weight:800; letter-spacing:.18em; }
+    .hv-heading-copy strong { font-size:23px; letter-spacing:-.035em; line-height:1.05; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .hv-heading-copy span { color:var(--secondary-text-color); font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .hv-car { flex:none; width:95px; height:58px; display:grid; place-items:center; border-radius:22px; background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.035)); color:rgba(225,235,242,.90); }
+    .hv-car ha-icon { --mdc-icon-size:68px; }
+    .hv-battery-row { display:flex; justify-content:space-between; align-items:end; gap:14px; }
+    .hv-battery-row div { display:flex; flex-direction:column; gap:1px; }
+    .hv-battery-row div:last-child { text-align:right; }
+    .hv-battery-row b { font-size:25px; line-height:1; letter-spacing:-.035em; }
+    .hv-battery-row span { color:var(--secondary-text-color); font-size:11px; }
+    .hv-battery-track { height:8px; border-radius:999px; background:rgba(255,255,255,.14); overflow:hidden; }
+    .hv-battery-track span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--hemma-color-blue,#0088ff),var(--hemma-color-ice,#3cd3fe)); transition:width .35s ease; }
+    .hv-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
+    .hv-stats > div { min-width:0; display:flex; flex-direction:column; gap:4px; padding:9px 10px; border-radius:14px; background:rgba(255,255,255,.075); border:1px solid rgba(255,255,255,.10); }
+    .hv-stats small { color:var(--secondary-text-color); font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .hv-stats b { font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .hv-chips { display:flex; flex-wrap:wrap; gap:7px; }
+    .hv-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 9px; border:1px solid rgba(48,209,88,.26); border-radius:999px; background:rgba(48,209,88,.075); color:var(--primary-text-color); min-width:0; }
+    .hv-chip ha-icon { --mdc-icon-size:15px; color:var(--hemma-color-green,#30D158); }
+    .hv-chip span { min-width:0; display:flex; flex-direction:column; gap:1px; }
+    .hv-chip b { font-size:10px; font-weight:700; white-space:nowrap; }
+    .hv-chip small { color:var(--secondary-text-color); font-size:10px; white-space:nowrap; max-width:150px; overflow:hidden; text-overflow:ellipsis; }
+    .hv-chip.warn { border-color:rgba(255,146,48,.38); background:rgba(255,146,48,.11); }
+    .hv-chip.warn ha-icon { color:var(--hemma-color-orange,#ff9230); }
+    .hv-chip.ok { border-color:rgba(48,209,88,.26); }
+    .hv-actions { display:flex; gap:8px; margin-top:auto; }
+    .hv-action { flex:1 1 0; min-width:0; min-height:34px; display:flex; justify-content:center; align-items:center; gap:5px; padding:6px 8px; border:1px solid rgba(255,255,255,.16); border-radius:11px; background:rgba(255,255,255,.08); color:var(--primary-text-color); font:inherit; font-size:11px; font-weight:650; cursor:pointer; transition:background .16s ease, transform .16s ease; }
+    .hv-action:hover { background:rgba(255,255,255,.16); }
+    .hv-action:active { transform:scale(.98); }
+    .hv-action ha-icon { --mdc-icon-size:15px; color:var(--secondary-text-color); }
+    .hv-action.climate { color:var(--hemma-color-ice,#3cd3fe); border-color:rgba(60,211,254,.28); }
+    .hv-action.climate ha-icon { color:var(--hemma-color-ice,#3cd3fe); }
+    @media (max-width: 767px), (max-height: 600px) { .hv-shell { min-height:300px; padding:16px; gap:9px; } .hv-heading-copy strong { font-size:19px; } .hv-car { width:76px; height:48px; } .hv-car ha-icon { --mdc-icon-size:54px; } .hv-stats > div { padding:7px; } .hv-stats b { font-size:11px; } .hv-chip { padding:5px 7px; } .hv-action { font-size:10px; } }
+
+  styles:
+    card:
+      - height: 360px
+      - min-height: 320px
+      - padding: 0
+      - overflow: hidden !important
+      - background: linear-gradient(145deg, rgba(51,72,84,.96), rgba(28,38,48,.96)) !important
+      - border: 1px solid rgba(167,213,231,.26)
+      - box-shadow: 0 12px 30px rgba(0,0,0,.22) !important
+    grid:
+      - grid-template-areas: '"vehicle_body"'
+      - grid-template-columns: 1fr
+      - grid-template-rows: 1fr
+      - gap: 0
+      - align-items: stretch
+      - justify-items: stretch
+    custom_fields:
+      vehicle_body:
+        - grid-area: vehicle_body
+        - width: 100%
+        - height: 100%
+        - min-height: 0
+        - overflow: hidden

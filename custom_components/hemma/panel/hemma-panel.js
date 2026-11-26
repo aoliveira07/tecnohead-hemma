@@ -506,6 +506,7 @@ const FILTER_CATEGORIES = {
   hemma_doorbell: "security",
   hemma_cameras: "security",
   hemma_vacuum: "unfiltered",
+  hemma_vehicle: "unfiltered",
   hemma_plant: "unfiltered",
   hemma_entity_actions: "by_entity",
 };

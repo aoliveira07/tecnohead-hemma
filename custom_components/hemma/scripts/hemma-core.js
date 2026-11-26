@@ -1535,6 +1535,7 @@ window.hemmaMenuGlass = {
     'hemma_humidifier', 'hemma_light', 'hemma_lock', 'hemma_media',
     'hemma_network', 'hemma_plant', 'hemma_presence', 'hemma_thermostat',
     'hemma_updates', 'hemma_vacuum',
+    'hemma_vehicle',
   ]);
 
   const hemmaTemplateList = (cfg) => {
@@ -1658,6 +1659,7 @@ window.hemmaMenuGlass = {
       hemma_doorbell:      'security',   // deprecated alias for hemma_camera
       hemma_cameras:       'security',
       hemma_vacuum:        'unfiltered',
+      hemma_vehicle:       'unfiltered',
       hemma_plant:         'unfiltered',
       hemma_entity_actions: 'by_entity',
     };
