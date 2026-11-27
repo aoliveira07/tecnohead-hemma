@@ -5626,6 +5626,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       const index = familyPhotoManualUntil > Date.now() ? familyPhotoIndex : automatic;
       familyPhotoRender(photos, index);
     };
+    const familyBox = $('.fam');
     const familyViewer = $('.pfv'), familyViewerImage = familyViewer && $('.pfv .pvframe img');
     let familyViewerIndex = 0, familyViewerGesture = null;
     const familyViewerRender = (index) => {
@@ -5664,12 +5665,12 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
         else familyPhotoStep(dx < 0 ? 1 : -1);
       }
     };
-    if (box) {
+    if (familyBox) {
       let gesture = null;
-      box.addEventListener('pointerdown', (e) => { if (!e.isPrimary) return; gesture = { id: e.pointerId, x: e.clientX, y: e.clientY }; try { box.setPointerCapture(e.pointerId); } catch (_) {} }, true);
-      box.addEventListener('pointerup', (e) => { familyPointerEnd(e, gesture, false); gesture = null; }, true);
-      box.addEventListener('pointercancel', () => { gesture = null; }, true);
-      box.addEventListener('click', (e) => { e.stopPropagation(); if (Date.now() >= familyPhotoSwipeUntil) familyViewerOpen(familyPhotoIndex); }, true);
+      familyBox.addEventListener('pointerdown', (e) => { if (!e.isPrimary) return; gesture = { id: e.pointerId, x: e.clientX, y: e.clientY }; try { familyBox.setPointerCapture(e.pointerId); } catch (_) {} }, true);
+      familyBox.addEventListener('pointerup', (e) => { familyPointerEnd(e, gesture, false); gesture = null; }, true);
+      familyBox.addEventListener('pointercancel', () => { gesture = null; }, true);
+      familyBox.addEventListener('click', (e) => { e.stopPropagation(); if (Date.now() >= familyPhotoSwipeUntil) familyViewerOpen(familyPhotoIndex); }, true);
     }
     if (familyViewer) {
       familyViewer.querySelector('.pvclose').onclick = (e) => { e.stopPropagation(); familyViewerClose(); };
