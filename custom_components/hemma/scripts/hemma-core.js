@@ -9154,7 +9154,19 @@ window.hemmaMenuGlass = {
       const states = (this._hass && this._hass.states) || {};
       const wanted = Array.isArray(this._config && this._config.calendars) ? this._config.calendars : [];
       const ids = wanted.length ? wanted.filter((id) => states[id]) : Object.keys(states).filter((id) => id.indexOf('calendar.') === 0 && states[id]);
-      return ids.sort((a, b) => String((states[a].attributes || {}).friendly_name || a).localeCompare(String((states[b].attributes || {}).friendly_name || b), this._lang()));
+      const family = ids.filter((id) => {
+        const name = String((states[id].attributes || {}).friendly_name || id).toLowerCase();
+        const meta = this._meta(id, name, 0);
+        return ['Anderson', 'Léia', 'Alice'].indexOf(meta.label) >= 0;
+      });
+      const source = family.length ? family : ids;
+      const seen = new Set();
+      return source.filter((id) => {
+        const meta = this._meta(id, (states[id].attributes || {}).friendly_name || id, 0);
+        if (seen.has(meta.label)) return false;
+        seen.add(meta.label);
+        return true;
+      }).sort((a, b) => String((states[a].attributes || {}).friendly_name || a).localeCompare(String((states[b].attributes || {}).friendly_name || b), this._lang()));
     }
     _meta(id, name, index) {
       const key = `${id || ''} ${name || ''}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
