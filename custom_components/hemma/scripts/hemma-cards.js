@@ -4747,7 +4747,7 @@ ${PILL_CSS}    @media (max-width: 768px) { .lpill { position: fixed; height: 52p
     const faces = kind0 === 'face' || rooms;
     const size = (ax) => ax === 'y' ? innerHeight : innerWidth;
     const tr = (ax, v) => ax === 'y' ? '0 ' + v + 'px' : v + 'px 0';
-    const mine = (e) => e.composedPath().some((n) => n.classList && (n.classList.contains('rdet') || n.classList.contains('mini') || (n.classList.contains('slab') && n.classList.contains('detail')) || n.classList.contains('ls') || n.classList.contains('fam') || n.classList.contains('pfv')));
+    const mine = (e) => e.composedPath().some((n) => n.classList && (n.classList.contains('rdet') || n.classList.contains('mini') || (n.classList.contains('slab') && n.classList.contains('detail')) || n.classList.contains('ls') || n.classList.contains('fam') || n.classList.contains('pfv') || n.classList.contains('wk')));
     // Sideways moves through the screensavers; up and down through Clock's faces.
     const build = (dir, ax) => {
       if (ax === 'y' && rooms) {
@@ -5417,6 +5417,14 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     };
     tick();
     SAVER.clock = setInterval(tick, 1000);
+    // The date is the entry point to the interactive seven-day family calendar.
+    // A tap opens Week; the rest of the Today surface still wakes the dashboard.
+    $('.dt').addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      window.hemmaSaver.stop(true);
+      window.hemmaSaver.start(Object.assign({}, o, { style: 'week', face: '', rotate: 0, instant: true }));
+    });
     // What's playing, with Play or Pause; with nothing playing, the spot shows what Studio picked: the calendar (Home at a glance without one), the forecast or nothing.
     let fc = null, cal = null;
     // Background "Artwork": the playing cover's colors as large soft clouds drifting behind everything, held light enough for the dark ink.
@@ -6471,11 +6479,17 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     .pho.aer ~ .mini { left: auto; right: 72px; top: max(46px, calc(env(safe-area-inset-top, 0px) + 24px)); width: 164px; height: 54px; border-radius: 27px; }
     :host(.pt) .pho .top { top: 110px; } :host(.pt) .pho.np .top { top: 150px; } :host(.pt) .pho .tm { font-size: 200px; } :host(.pt) .pho .foot { bottom: 90px; }
     :host(.pt) .pho.aer .top { top: 90px; } :host(.pt) .pho.aer .foot { bottom: 110px; }
+    .wk { touch-action: none; }
     .wk .hd { position: absolute; left: 76px; right: 76px; top: 58px; display: flex; justify-content: space-between; align-items: baseline; }
     .wk .hd h1 { font-size: 64px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; margin: 0; }
     .wk .hd p { font-size: 24px; font-weight: 600; color: var(--sub); margin: 10px 0 0; }
     .wk .hd .tm { font-size: 64px; font-weight: 700; letter-spacing: -0.035em; line-height: 1; }
-    .wk .gr { position: absolute; left: 60px; right: 60px; top: 0; bottom: 0; padding-top: 70px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-content: center; align-items: stretch; }
+    .wk .wkt { min-width: 0; }
+    .wk .wkhead { display: flex; align-items: center; gap: 12px; }
+    .wk .wkctl { border: 0; color: var(--ink); font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .wk .wkctl.nav { width: 46px; height: 46px; border-radius: 23px; background: var(--fill); color: var(--ink); font-size: 40px; font-weight: 400; line-height: .8; display: grid; place-items: center; }
+    .wk .wkctl.nav:active { filter: brightness(.88); }
+    .wk .gr { position: absolute; left: 60px; right: 60px; top: 0; bottom: 80px; padding-top: 70px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-content: center; align-items: stretch; }
     .wk .d { padding: 20px 16px 30px; border-radius: 26px; min-width: 0; display: flex; flex-direction: column; position: relative; }
     .wk .d + .d::before { content: ""; position: absolute; left: 0; top: 20px; bottom: 20px; width: 1px; background: var(--line); }
     .wk .d.td { background: var(--fill); } .wk .d.td::before, .wk .d.td + .d::before { display: none; }
@@ -6487,15 +6501,22 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     .wk .e b { font-size: 21px; font-weight: 600; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: break-word; hyphens: manual; -webkit-hyphens: manual; }
     .wk .e span { display: block; font-size: 18px; font-weight: 500; color: var(--sub); margin-top: 1px; }
     .wk .no { margin-top: 22px; font-size: 18px; font-weight: 500; color: var(--sub); }
+    .wk .wkbar { position: absolute; left: 76px; right: 76px; bottom: 18px; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 8px; z-index: 2; }
+    .wk .wkctl.filter { min-width: 92px; max-width: 210px; height: 38px; padding: 0 14px 0 10px; border-radius: 19px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; background: transparent; color: var(--sub); font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; }
+    .wk .wkctl.filter span { overflow: hidden; text-overflow: ellipsis; }
+    .wk .wkctl.filter i { width: 9px; height: 9px; flex: none; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 2px color-mix(in srgb, var(--c) 22%, transparent); }
+    .wk .wkctl.filter.on { background: var(--fill); color: var(--ink); }
+    .wk .wkctl.filter:active { filter: brightness(.9); }
     .wk.d5 .gr { grid-template-columns: repeat(5, minmax(0, 1fr)); } .wk.d5 .e b { -webkit-line-clamp: 3; font-size: 23px; } .wk.d5 .n { font-size: 68px; }
     :host(.pt) .wk.d5 .gr { grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(5, minmax(0, 1fr)); }
     :host(.pt) .wk .hd { left: 64px; right: 64px; top: 70px; }
-    :host(.pt) .wk .gr { left: 40px; right: 40px; top: 230px; bottom: 50px; padding-top: 0; grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(7, minmax(0, 1fr)); align-content: stretch; }
+    :host(.pt) .wk .gr { left: 40px; right: 40px; top: 230px; bottom: 100px; padding-top: 0; grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(7, minmax(0, 1fr)); align-content: stretch; }
     :host(.pt) .wk .d { flex-direction: row; align-items: center; padding: 0 24px; }
     :host(.pt) .wk .d + .d::before { left: 24px; right: 24px; top: 0; bottom: auto; width: auto; height: 1px; }
     :host(.pt) .wk .dh { width: 92px; flex: none; } :host(.pt) .wk .fx { width: 130px; flex: none; margin: 0; }
     :host(.pt) .wk .ev, :host(.pt) .wk .no { margin: 0; flex: 1; min-width: 0; flex-direction: row; gap: 40px; align-items: center; }
     :host(.pt) .wk .e { flex: 0 1 auto; max-width: 300px; min-width: 0; } :host(.pt) .wk .e b { -webkit-line-clamp: 1; }
+    :host(.pt) .wk .wkbar { left: 40px; right: 40px; bottom: 24px; }
     .cm { position: absolute; inset: 6px; display: grid; gap: 4px; border-radius: 24px; overflow: hidden; background: #000; }
     .cm.n1 { grid-template: 1fr / 1fr; } .cm.n2 { grid-template: 1fr / 1fr 1fr; }
     .cm.n3 { grid-template: 1fr 1fr / 1.9fr 1fr; } .cm.n3 .c:first-child { grid-row: 1 / 3; }
@@ -6524,22 +6545,27 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     return hs.connection.sendMessagePromise({ type: 'call_service', domain: 'weather', service: 'get_forecasts', service_data: { type: 'daily' }, target: { entity_id: wid }, return_response: true })
       .then((r) => { const f = (((r && r.response) || {})[wid] || {}).forecast || null; if (f) { SVX_C.fc = f; SVX_C.fcKey = wid; } return f; }).catch(() => null);
   };
-  const svxEvents = (hs, cals) => {
+  const svxEvents = (hs, cals, anchor) => {
     if (!cals.length || !hs || !hs.callApi) return Promise.resolve([]);
-    const a = new Date(); a.setHours(0, 0, 0, 0);
+    const a = new Date(anchor || new Date()); a.setHours(0, 0, 0, 0);
     const b = new Date(a); b.setDate(b.getDate() + 7);
-    return Promise.all(cals.map((id, ci) => hs.callApi('GET', `calendars/${id}?start=${encodeURIComponent(a.toISOString())}&end=${encodeURIComponent(b.toISOString())}`).then((l) => (l || []).map((e) => Object.assign(e, { _c: ci }))).catch(() => []))).then((all) => {
+    const key = cals.join() + '|' + a.toISOString().slice(0, 10);
+    if (SVX_C.evKey === key && SVX_C.ev) return Promise.resolve(SVX_C.ev);
+    return Promise.all(cals.map((id, ci) => hs.callApi('GET', `calendars/${id}?start=${encodeURIComponent(a.toISOString())}&end=${encodeURIComponent(b.toISOString())}`).then((l) => (l || []).map((e) => Object.assign(e, { _c: ci, _id: id }))).catch(() => []))).then((all) => {
       const seen = new Set();
-      const evs = [].concat(...all).map((e) => ({ name: e.summary || '', day: !!(e.start && e.start.date && !e.start.dateTime), a: new Date((e.start && (e.start.dateTime || e.start.date + 'T00:00')) || 0), b: new Date((e.end && (e.end.dateTime || e.end.date + 'T00:00')) || 0), c: SVX_TONES[e._c % SVX_TONES.length] }))
+      const evs = [].concat(...all).map((e) => {
+        const s = hs.states[e._id] || {}, a = s.attributes || {};
+        return { name: e.summary || '', cid: e._id, cal: a.friendly_name || e._id.replace(/^calendar\./, '').replace(/[_-]+/g, ' '), day: !!(e.start && e.start.date && !e.start.dateTime), a: new Date((e.start && (e.start.dateTime || e.start.date + 'T00:00')) || 0), b: new Date((e.end && (e.end.dateTime || e.end.date + 'T00:00')) || 0), c: SVX_TONES[e._c % SVX_TONES.length] };
+      })
         .filter((e) => { const k = e.name + '|' + +e.a; if (seen.has(k)) return false; seen.add(k); return true; }).sort((x, y) => x.a - y.a);
-      SVX_C.ev = evs; SVX_C.evKey = cals.join();
+      SVX_C.ev = evs; SVX_C.evKey = key;
       return evs;
     });
   };
   const svxWarm = (o) => {
     const h = CAMS.hassNow();
     if (!h || !(o && o.rotate > 0) || (Array.isArray(o.cycle) && o.cycle.length && !o.cycle.includes('week'))) return;
-    svxEvents(h, svxCals(h, o));
+    svxEvents(h, svxCals(h, o), new Date());
     svxForecast(h, saverViewVar('weather_entity') || Object.keys(h.states).find((k) => k.indexOf('weather.') === 0));
   };
   const saverX = (o) => {
@@ -6566,7 +6592,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     const clockTxt = (d) => d.toLocaleTimeString(lang, { hour: 'numeric', minute: '2-digit' }).replace(/\s?[AaPp]\.?\s?[Mm]\.?$/, '');
     const dateTwo = (d) => `${esc(d.toLocaleDateString(lang, { weekday: 'long' }))} <span>${esc(d.toLocaleDateString(lang, { month: 'long', day: 'numeric' }))}</span>`;
     const wid = saverViewVar('weather_entity') || Object.keys(h.states).find((k) => k.indexOf('weather.') === 0);
-    let fc = null, evs = null;
+    let fc = null, evs = null, weekOffset = 0, weekFilter = '';
     const wxNow = () => {
       const hs = CAMS.hassNow(), w = wid && hs.states[wid];
       if (!w) return null;
@@ -6583,9 +6609,15 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       svxForecast(hs, wid).then((f) => { if (f) { fc = f; draw(); } });
     };
     const cals = svxCals(h, o);
-    if (SVX_C.evKey === cals.join()) evs = SVX_C.ev;
+    const ND = o.wdays === 5 ? 5 : 7;
+    const weekAnchor = () => { const a = new Date(); a.setHours(0, 0, 0, 0); a.setDate(a.getDate() + weekOffset * ND); return a; };
+    const calInfo = cals.map((id, i) => {
+      const s = h.states[id] || {}, a = s.attributes || {};
+      return { id, name: a.friendly_name || id.replace(/^calendar\./, '').replace(/[_-]+/g, ' '), color: SVX_TONES[i % SVX_TONES.length] };
+    });
+    if (kind === 'week' && SVX_C.evKey === cals.join() + '|' + weekAnchor().toISOString().slice(0, 10)) evs = SVX_C.ev;
     if (SVX_C.fcKey === wid) fc = SVX_C.fc;
-    const calendar = () => { svxEvents(CAMS.hassNow(), cals).then((e) => { evs = e; draw(); }); };
+    const calendar = () => { svxEvents(CAMS.hassNow(), cals, kind === 'week' ? weekAnchor() : new Date()).then((e) => { evs = e; draw(); }); };
     const rooms = () => {
       const c = saverLL() || (Array.isArray(o.views) ? { views: o.views } : null), dk = !!(h.themes && h.themes.darkMode), out = [], seen = new Set();
       for (const v of (c && c.views) || []) {
@@ -6634,21 +6666,50 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       } else if (kind === 'week') {
         const d0 = new Date(d); d0.setHours(0, 0, 0, 0);
         let n = 0, cols = '';
-        const ND = o.wdays === 5 ? 5 : 7;
+        const start = weekAnchor();
         stg.classList.toggle('d5', ND === 5);
         for (let i = 0; i < ND; i++) {
-          const a = new Date(d0); a.setDate(a.getDate() + i);
+          const a = new Date(start); a.setDate(a.getDate() + i);
           const b = new Date(a); b.setDate(b.getDate() + 1);
-          const day = (evs || []).filter((e) => e.a < b && e.b > a && (i || e.day || e.b > d)).slice(0, 4);
+          const day = (evs || []).filter((e) => e.a < b && e.b > a && (i || e.day || e.b > d) && (!weekFilter || e.cid === weekFilter)).slice(0, 4);
           n += day.length;
           const f = (fc || []).find((z) => { const t = new Date(z.datetime); return t >= a && t < b; });
           cols += `<div class="d${i ? '' : ' td'}"><div class="dh"><div class="wd">${esc(i ? a.toLocaleDateString(lang, { weekday: 'short' }).replace(/\.$/, '') : T('saver.today', 'Today'))}</div><div class="n num">${a.getDate()}</div></div>`
             + `<div class="fx">${f ? `<i class="wi" style="--i:url('${wxIcon(f.condition)}')"></i>${Math.round(f.temperature)}°<span>${f.templow != null ? Math.round(f.templow) + '°' : ''}</span>` : ''}</div>`
             + (day.length ? `<div class="ev">${day.map((e) => `<div class="e" style="--c:${e.c}"><b>${esc(e.name)}</b><span>${esc(e.day ? T('saver.all_day_one', 'All day') : e.a.toLocaleTimeString(lang, { hour: 'numeric', minute: '2-digit' }))}</span></div>`).join('')}</div>` : `<div class="no">${esc(T('saver.nothing_planned', 'Nothing planned'))}</div>`) + '</div>';
         }
-        put(`<div class="hd"><div><h1>${esc(T('saver.this_week', 'This Week'))}</h1></div><div class="tm num">${esc(clockTxt(d))}</div></div><div class="gr">${cols}</div>`);
+        const finish = new Date(start); finish.setDate(finish.getDate() + ND - 1);
+        const range = `${start.toLocaleDateString(lang, { day: 'numeric', month: 'short' })} – ${finish.toLocaleDateString(lang, { day: 'numeric', month: 'short' })}`;
+        const filters = [{ id: '', name: T('saver.lights_all', 'All') }].concat(calInfo).map((x) => `<button type="button" class="wkctl filter${weekFilter === x.id ? ' on' : ''}" data-wk-filter="${esc(x.id)}" aria-pressed="${weekFilter === x.id}"><i style="--c:${x.color || 'var(--sub)'}"></i><span>${esc(x.name)}</span></button>`).join('');
+        put(`<div class="hd"><div class="wkt"><h1>${esc(T('saver.this_week', 'This Week'))}</h1><p>${esc(range)}</p></div><div class="wkhead"><button type="button" class="wkctl nav" data-wk-nav="-1" aria-label="Previous seven days">‹</button><div class="tm num">${esc(clockTxt(d))}</div><button type="button" class="wkctl nav" data-wk-nav="1" aria-label="Next seven days">›</button></div></div><div class="gr">${cols}</div><div class="wkbar">${filters}</div>`);
       }
     };
+    if (kind === 'week') {
+      let down = null, weekSwiped = 0;
+      stg.addEventListener('pointerdown', (e) => {
+        if (e.target.closest && e.target.closest('.wkctl')) return;
+        down = { x: e.clientX, y: e.clientY, id: e.pointerId };
+      }, true);
+      stg.addEventListener('pointerup', (e) => {
+        if (!down || e.pointerId !== down.id) return;
+        const dx = e.clientX - down.x, dy = e.clientY - down.y;
+        down = null;
+        if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.35) return;
+        e.preventDefault(); e.stopPropagation();
+        weekSwiped = Date.now();
+        weekOffset += dx < 0 ? 1 : -1;
+        draw(); calendar();
+      }, true);
+      stg.addEventListener('pointercancel', () => { down = null; }, true);
+      stg.addEventListener('click', (e) => {
+        if (Date.now() - weekSwiped < 600) { e.preventDefault(); e.stopImmediatePropagation(); return; }
+        const b = e.target.closest && e.target.closest('.wkctl');
+        if (!b) return;
+        e.preventDefault(); e.stopPropagation();
+        if (b.dataset.wkNav) { weekOffset += Number(b.dataset.wkNav) || 0; draw(); calendar(); return; }
+        if (b.dataset.wkFilter !== undefined) { weekFilter = b.dataset.wkFilter; draw(); }
+      }, true);
+    }
     const cams = () => {
       const hs = CAMS.hassNow(), own = Array.isArray(o.cams) ? o.cams.filter((id) => hs.states[id]) : [], ids = (own.length ? own : CAMS.list(hs, CAMS.settings())).slice(0, 6), box = $('.cm');
       if (!box) return;
