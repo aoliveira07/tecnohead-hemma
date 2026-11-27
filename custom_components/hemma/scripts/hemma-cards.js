@@ -5498,10 +5498,10 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       im.src = art;
     };
     const cals = (Array.isArray(o.cals) && o.cals.length ? o.cals : Object.keys(h.states)).filter((k) => k.indexOf('calendar.') === 0 && h.states[k]);
-    // The portrait Today layout keeps the compact status list beside the
-    // photo. A previous configuration may still say "calendar" from the
-    // older full calendar widget, so migrate that stale choice for this face.
-    const idle = (o.style === 'clock_photo' && o.idle === 'calendar' ? 'glance' : (o.idle === 'forecast' ? '' : o.idle)) || 'glance', keep = o.np === 'keep';
+    // Today keeps the compact status list beside the photo. A previous
+    // configuration may still say "calendar" from the older full widget, so
+    // migrate that stale choice while keeping the full week view on tap.
+    const idle = (o.idle === 'calendar' ? 'glance' : (o.idle === 'forecast' ? '' : o.idle)) || 'glance', keep = o.np === 'keep';
     const ico = (n) => `<i><b style="--i:url(&quot;${window.hemmaIconUrl ? window.hemmaIconUrl(n) : ''}&quot;)"></b></i>`;
     const glance = () => {
       const S = CAMS.hassNow().states, ids = Object.keys(S), on = (d, f) => ids.filter((k) => k.indexOf(d + '.') === 0 && f(S[k]));
