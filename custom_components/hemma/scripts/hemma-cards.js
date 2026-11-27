@@ -47,12 +47,13 @@
   const HEMMA_FAMILY_ORDER = ['Anderson', 'Léia', 'Alice'];
   const hemmaFamilyCalendarIds = (h, ids) => {
     const ranked = [];
+    const seen = new Set();
     (ids || []).forEach((id, index) => {
       const s = h.states[id];
       if (!s) return;
       const a = s.attributes || {}, rawName = a.friendly_name || id.replace(/^calendar\./, '').replace(/[_-]+/g, ' ');
       const meta = hemmaCalendarMeta(id, rawName, index), rank = HEMMA_FAMILY_ORDER.indexOf(meta.label);
-      if (rank >= 0) ranked.push({ id, rank });
+      if (rank >= 0 && !seen.has(meta.label)) { seen.add(meta.label); ranked.push({ id, rank }); }
     });
     return ranked.sort((a, b) => a.rank - b.rank).map((item) => item.id);
   };
