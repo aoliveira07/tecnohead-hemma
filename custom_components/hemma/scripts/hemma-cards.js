@@ -5156,21 +5156,21 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     :host(.compact) .stg.family .fam { width: min(42vw, 78vh); }
     :host(.compact) .stg.family .dt { left: 4%; width: 26%; transform: scale(.84); transform-origin: left top; }
     :host(.compact) .stg.family .gl { left: 4%; width: 26%; transform: scale(.78); transform-origin: left top; }
-    :host(.compact) .stg.family .gl > div { gap: 11px; font-size: 32px; }
-    :host(.compact) .stg.family .gl i { width: 44px; height: 44px; }
+    :host(.compact) .stg.family .gl > div { gap: 12px; font-size: 35px; }
+    :host(.compact) .stg.family .gl i { width: 46px; height: 46px; }
     :host(.compact) .stg.family .fc, :host(.compact) .stg.family .cal { left: 4%; width: 26%; transform: scale(.78); transform-origin: left top; }
     :host(.compact) .stg.family .fc div { grid-template-columns: 66px 30px minmax(0, 1fr); gap: 8px; font-size: 19px; }
-    :host(.compact) .stg.family .ck { right: 4%; width: 250px; height: 250px; }
+    :host(.compact) .stg.family .ck { right: 4%; top: 7%; width: 280px; height: 280px; }
     /* Keep the compact weather block on the clock's exact vertical axis. It
-       uses the same 250px column as the clock instead of relying on the
+       uses the same 280px column as the clock instead of relying on the
        intrinsic width of the temperature text, which was making Casa drift
        left on the 1366px panel. */
-    :host(.compact) .stg.family .wx { left: auto; right: 4%; top: 54%; width: 250px; transform: none; text-align: center; }
-    :host(.compact) .stg.family .wx .c { justify-content: center; font-size: 64px; line-height: 1; letter-spacing: -0.02em; }
-    :host(.compact) .stg.family .wx .c svg { width: 24px; height: 24px; }
-    :host(.compact) .stg.family .wx .tp { font-size: 150px; text-align: center; }
+    :host(.compact) .stg.family .wx { left: auto; right: 4%; top: 54%; width: 280px; transform: none; text-align: center; }
+    :host(.compact) .stg.family .wx .c { justify-content: center; font-size: 72px; line-height: 1; letter-spacing: -0.02em; }
+    :host(.compact) .stg.family .wx .c svg { width: 26px; height: 26px; }
+    :host(.compact) .stg.family .wx .tp { font-size: 165px; text-align: center; }
     :host(.compact) .stg.family .wx i { margin: 10px auto 6px; }
-    :host(.compact) .stg.family .wx .cd, :host(.compact) .stg.family .wx .hl { text-align: center; }
+    :host(.compact) .stg.family .wx .cd, :host(.compact) .stg.family .wx .hl { font-size: 30px; text-align: center; }
     :host(.compact) .pfv { grid-template-columns: 58px minmax(0, 1fr) 58px; gap: 10px; padding-inline: 20px; }
     :host(.compact) .pfv .pvtop b { font-size: 20px; }
     :host(.compact) .pfv button { width: 48px; height: 48px; }
@@ -5679,7 +5679,12 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       familyBox.addEventListener('pointerdown', (e) => { if (!e.isPrimary) return; gesture = { id: e.pointerId, x: e.clientX, y: e.clientY }; try { familyBox.setPointerCapture(e.pointerId); } catch (_) {} }, true);
       familyBox.addEventListener('pointerup', (e) => { familyPointerEnd(e, gesture, false); gesture = null; }, true);
       familyBox.addEventListener('pointercancel', () => { gesture = null; }, true);
-      familyBox.addEventListener('click', (e) => { e.stopPropagation(); if (Date.now() >= familyPhotoSwipeUntil) familyViewerOpen(familyPhotoIndex); }, true);
+      familyBox.addEventListener('click', (e) => {
+        // A swipe changes the image in place; suppress only the synthetic
+        // click that follows it. A plain tap must reach saverMount and wake
+        // the operational dashboard instead of opening a photo viewer.
+        if (Date.now() < familyPhotoSwipeUntil) { e.stopPropagation(); e.preventDefault(); }
+      }, true);
     }
     if (familyViewer) {
       familyViewer.querySelector('.pvclose').onclick = (e) => { e.stopPropagation(); familyViewerClose(); };
@@ -5700,7 +5705,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     // remains aligned while the screensaver is protecting the panel.
     saverDrift([['.dt', '.ck', '.wx'], ['.md'], ['.fc'], ['.cal', '.gl']].map((g) => g.map((q) => $(q))));
     if (keep) saverMini(sr, 'pill');
-    saverMount(layer, sr, o, (n) => n.classList.contains('md') || n.classList.contains('wx') || n.classList.contains('fam') || n.classList.contains('pfv'));
+    saverMount(layer, sr, o, (n) => n.classList.contains('md') || n.classList.contains('wx') || n.classList.contains('pfv'));
     $('.wx').style.cursor = 'pointer';
     $('.wx').onclick = (e) => { e.stopPropagation(); saverWeather(sr, $('.wx'), fc, lang, wid); };
   };
