@@ -6739,6 +6739,16 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     };
     if (kind === 'week') {
       let down = null, weekSwiped = 0;
+      const weekControl = (e) => {
+        const b = e.composedPath().find((n) => n && n.dataset && (n.dataset.wkNav !== undefined || n.dataset.wkFilter !== undefined));
+        if (!b || (e.type === 'click' && Date.now() - weekSwiped < 600)) return;
+        e.preventDefault(); e.stopPropagation();
+        weekSwiped = Date.now();
+        if (b.dataset.wkNav) { weekOffset += Number(b.dataset.wkNav) || 0; draw(); calendar(); return; }
+        if (b.dataset.wkFilter !== undefined) { weekFilter = b.dataset.wkFilter; draw(); }
+      };
+      layer.addEventListener('pointerup', weekControl, true);
+      layer.addEventListener('click', weekControl, true);
       stg.addEventListener('pointerdown', (e) => {
         if (e.target.closest && e.target.closest('.wkctl')) return;
         down = { x: e.clientX, y: e.clientY, id: e.pointerId };
