@@ -533,6 +533,8 @@
   "saver.nothing_planned": "Nada planejado",
   "saver.notification_one": "1 notificação",
   "saver.notifications": "{n} notificações",
+  "saver.scheduled_item": "1 item agendado",
+  "saver.scheduled_items": "{n} itens agendados",
   "saver.one_more": "mais 1 evento",
   "saver.this_week": "esta semana",
   "saver.today": "hoje",

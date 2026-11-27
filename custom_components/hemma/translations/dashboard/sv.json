@@ -533,6 +533,8 @@
 	"saver.nothing_planned": "Inget planerat",
 	"saver.notification_one": "1 notis",
 	"saver.notifications": "{n} notiser",
+	"saver.scheduled_item": "1 schemalagt objekt",
+	"saver.scheduled_items": "{n} schemalagda objekt",
 	"saver.one_more": "1 händelse till",
 	"saver.this_week": "Den här veckan",
 	"saver.today": "Idag",

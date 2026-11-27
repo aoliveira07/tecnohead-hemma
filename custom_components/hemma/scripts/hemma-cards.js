@@ -5097,7 +5097,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     [hidden] { display: none !important; }
     .fc div { display: grid; grid-template-columns: 90px 44px auto; align-items: center; gap: 16px; font-size: 26px; font-weight: 500; }
     .fc i, .wx i { display: block; width: 40px; height: 34px; background: var(--ink); -webkit-mask: var(--i) center / contain no-repeat; mask: var(--i) center / contain no-repeat; }
-    .wx { position: absolute; left: 74%; top: 54%; }
+    .wx { position: absolute; left: 74%; top: 50%; width: 280px; text-align: center; }
     .dt, .ck, .wx { transition: left .6s cubic-bezier(0.32, 0.72, 0, 1); }
     .stg.still :is(.dt, .ck, .wx) { transition: none; }
     .stg.wide .dt { left: 5%; } .stg.wide .ck { left: auto; right: 7%; } .stg.wide .wx { left: 74%; }
@@ -5108,8 +5108,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     /* Upright, the media (or forecast, or Home at a glance) sits beside the weather as in landscape; the calendar takes the full width under it. */
     :host(.pt) .stg .wx { left: 470px; top: 690px; } :host(.pt) .wx .tp { font-size: 150px; }
     :host(.pt) .stg .md, :host(.pt) .stg .fc, :host(.pt) .stg .gl { left: 60px; top: 700px; width: 360px; }
-    :host(.pt) .stg.wide .wx { left: 60px; top: 575px; display: grid; grid-template-columns: auto auto; grid-template-areas: "c ." "tp i" "tp cd"; column-gap: 36px; align-items: end; }
-    :host(.pt) .stg.wide .wx .c { grid-area: c; } :host(.pt) .stg.wide .wx .tp { grid-area: tp; align-self: end; } :host(.pt) .stg.wide .wx i { grid-area: i; margin: 0 0 6px; width: 48px; height: 40px; } :host(.pt) .stg.wide .wx .cd { grid-area: cd; }
+    :host(.pt) .stg.wide .wx { left: 60px; top: 575px; width: 280px; text-align: center; }
     :host(.pt) .stg .cal, :host(.pt) .stg.wide .cal { left: 60px; top: 845px; width: 700px; }
     .cal, .gl { position: absolute; left: 5%; top: 55%; width: 34%; display: grid; gap: 20px; }
     .cal .hd, .gl > div { display: flex; align-items: center; gap: 14px; font-size: 38px; font-weight: 600; line-height: 1.1; min-width: 0; }
@@ -5123,9 +5122,11 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     .cal .tm small { font-size: 26px; font-weight: 700; margin-left: 1px; }
     .cal .nm { font-size: 40px; font-weight: 500; line-height: 1.28; margin-block: -3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .cal .more { font-size: 34px; font-weight: 500; color: var(--sub); }
-    .wx .c { font-size: 28px; font-weight: 600; color: var(--hi); display: flex; align-items: center; gap: 6px; }
-    .wx .tp { font-size: 168px; font-weight: 600; line-height: 1; letter-spacing: -0.04em; margin-top: 2px; }
-    .wx .cd { font-size: 26px; font-weight: 500; } .wx i { margin: 10px 0 6px; width: 52px; height: 44px; }
+    .wx .tp { font-size: 168px; font-weight: 600; line-height: .9; letter-spacing: -0.04em; margin: 0; }
+    .wx .cd { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; font-size: 30px; font-weight: 500; }
+    .wx .cd i { flex: none; margin: 0; width: 36px; height: 32px; }
+    .wx .rng { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-top: 16px; color: var(--sub); font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums; }
+    .wx .rng span { white-space: nowrap; }
     /* Tecnohead Today photo lane: portrait-only family photos run from top to
        bottom in the centre. The blurred copy fills the lane behind the intact
        image so mixed portrait ratios never produce black side bars. */
@@ -5179,12 +5180,10 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
        uses the same 280px column as the clock instead of relying on the
        intrinsic width of the temperature text, which was making Casa drift
        left on the 1366px panel. */
-    :host(.compact) .stg.family .wx { left: auto; right: 4%; top: 54%; width: 280px; transform: none; text-align: center; }
-    :host(.compact) .stg.family .wx .c { justify-content: center; font-size: 72px; line-height: 1; letter-spacing: -0.02em; }
-    :host(.compact) .stg.family .wx .c svg { width: 26px; height: 26px; }
+    :host(.compact) .stg.family .wx { left: auto; right: 4%; top: 50%; width: 280px; transform: none; text-align: center; }
     :host(.compact) .stg.family .wx .tp { font-size: 165px; text-align: center; }
-    :host(.compact) .stg.family .wx i { margin: 10px auto 6px; }
     :host(.compact) .stg.family .wx .cd { font-size: 30px; text-align: center; }
+    :host(.compact) .stg.family .wx .rng { margin-top: 14px; font-size: 22px; }
     :host(.compact) .pfv { grid-template-columns: 58px minmax(0, 1fr) 58px; gap: 10px; padding-inline: 20px; }
     :host(.compact) .pfv .pvtop b { font-size: 20px; }
     :host(.compact) .pfv button { width: 48px; height: 48px; }
@@ -5416,7 +5415,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       <div class="fc" hidden></div><div class="cal" hidden></div><div class="gl" hidden></div>
        <div class="fam" hidden role="group" aria-label="Fotos"><div class="fp"><img alt="Foto"></div><div class="fb"><span class="dots"></span></div></div>
        <div class="pfv" hidden role="dialog" aria-label="Visualizador de fotos"><div class="pvtop"><button type="button" class="pvclose" aria-label="Voltar">×</button><b class="pvname">Fotos</b><span class="pvcount"></span></div><button type="button" class="pvnav pvprev" aria-label="Foto anterior">‹</button><div class="pvframe"><img alt="Foto da família"></div><button type="button" class="pvnav pvnext" aria-label="Próxima foto">›</button><div class="pvfoot"><span class="pvdots"></span></div></div>
-      <div class="wx" hidden><div class="c"><span></span><svg width="18" height="18" viewBox="0 0 16 16"><path d="M15 1 1 7l6 2 2 6z" style="fill:var(--hi)"/></svg></div><div class="tp"></div><i></i><div class="cd"></div></div>
+      <div class="wx" hidden><div class="tp"></div><div class="cd"><i></i><span></span></div><div class="rng" hidden><span class="lo"></span><span class="hi"></span></div></div>
     </div>${o.np === 'keep' ? MINI_HTML : ''}<div class="dark"></div>`;
     stageFit(sr);
     const $ = (q) => sr.querySelector(q);
@@ -5431,16 +5430,20 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     };
     tick();
     SAVER.clock = setInterval(tick, 1000);
-    // The date is the entry point to the interactive seven-day family calendar.
-    // A tap opens Week; the rest of the Today surface still wakes the dashboard.
+    // The date and the scheduled-items row are both entry points to the
+    // interactive seven-day family calendar. The rest of Today still wakes
+    // the operational dashboard.
+    const openCalendar = () => {
+      window.hemmaSaver.stop(true);
+      window.hemmaSaver.start(Object.assign({}, o, { style: 'week', face: '', rotate: 0, instant: true }));
+    };
     $('.dt').addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      window.hemmaSaver.stop(true);
-      window.hemmaSaver.start(Object.assign({}, o, { style: 'week', face: '', rotate: 0, instant: true }));
+      openCalendar();
     });
     // What's playing, with Play or Pause; with nothing playing, the spot shows what Studio picked: the calendar (Home at a glance without one), the forecast or nothing.
-    let fc = null, cal = null;
+    let fc = null, cal = null, scheduledCount = 0, weatherRange = null;
     // Background "Artwork": the playing cover's colors as large soft clouds drifting behind everything, held light enough for the dark ink.
     const glowOn = o.style === 'clock' && (o.bg === 'artwork' || o.bg === 'album');
     const albumOn = o.style === 'clock' && o.bg === 'album';
@@ -5502,14 +5505,11 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       const lights = on('light', (x) => x.state === 'on' && !(x.attributes || {}).entity_id).length;
       const open = on('lock', (x) => x.state !== 'locked' && x.state !== 'unavailable').length, locks = on('lock', () => true).length;
       const temps = on('climate', (x) => Number.isFinite(Number((x.attributes || {}).current_temperature))).map((k) => Number(S[k].attributes.current_temperature));
-      const alerts = on('binary_sensor', (x) => x.state === 'on' && ['smoke', 'gas', 'moisture', 'carbon_monoxide', 'safety', 'problem', 'tamper'].includes((x.attributes || {}).device_class)).length;
       const rows = [];
       if (locks) rows.push(['lock-fill', open ? T('saver.unlocked', '{n} unlocked', { n: open }) : T('saver.all_locked', 'All doors locked')]);
       rows.push(['light', lights === 1 ? T('saver.light_on_one', '1 light on') : lights ? T('saver.lights_on', '{n} lights on', { n: lights }) : T('saver.lights_off', 'All lights off')]);
       if (temps.length) rows.push(['temp-medium', T('saver.inside', 'Inside {t}°', { t: Math.round(temps.reduce((a, b) => a + b, 0) / temps.length) })]);
-      let notes = 0;
-      try { notes = window._hemmaNotify ? window._hemmaNotify.rows.length : 0; } catch (_) {}
-      rows.push(['bell', alerts ? T('saver.alerts', '{n} alerts', { n: alerts }) : notes === 1 ? T('saver.notification_one', '1 notification') : notes ? T('saver.notifications', '{n} notifications', { n: notes }) : T('security.no_alerts', 'No Alerts')]);
+      rows.push(['calendar', scheduledCount === 1 ? T('saver.scheduled_item', '1 scheduled item') : T('saver.scheduled_items', '{n} scheduled items', { n: scheduledCount })]);
       $('.gl').innerHTML = rows.map(([i, t]) => `<div data-k="${i}">${ico(i)}<span>${esc(t)}</span></div>`).join('');
     };
     const h12 = new Intl.DateTimeFormat(lang, { hour: 'numeric' }).resolvedOptions().hour12;
@@ -5522,7 +5522,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     };
     const calendar = () => {
       const hs = CAMS.hassNow();
-      if (!cals.length || !hs.callApi) return;
+      if (!cals.length || !hs.callApi) { scheduledCount = 0; return; }
       const now = new Date(), end = new Date(now); end.setHours(24, 0, 0, 0);
       const tom = new Date(end); tom.setDate(tom.getDate() + 6);
       Promise.all(cals.map((id, ci) => hs.callApi('GET', `calendars/${id}?start=${encodeURIComponent(now.toISOString())}&end=${encodeURIComponent(tom.toISOString())}`).then((list) => (list || []).map((e) => Object.assign(e, { _c: ci, _id: id }))).catch(() => []))).then((all) => {
@@ -5532,6 +5532,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
           return { name: e.summary || '', day: !!(e.start && e.start.date && !e.start.dateTime), a: new Date((e.start && (e.start.dateTime || e.start.date + 'T00:00')) || 0), b: new Date((e.end && (e.end.dateTime || e.end.date + 'T00:00')) || 0), c: meta.color };
         })
           .filter((e) => e.b > now).sort((x, y) => x.a - y.a);
+        scheduledCount = evs.length;
         const today = evs.filter((e) => e.a < end), days = today.filter((e) => e.day), timed = today.filter((e) => !e.day);
         // With nothing left today, the widget becomes Up Next: the coming week's events, each with its day.
         const later = !today.length ? evs : [];
@@ -5577,6 +5578,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     $('.gl').onclick = (e) => {
       const row = e.target.closest && e.target.closest('.gl > div');
       if (row && row.dataset.k === 'light') { e.stopPropagation(); saverLights(sr, row); return; }
+      if (row && row.dataset.k === 'calendar') { e.stopPropagation(); openCalendar(); return; }
       if (!row || row !== $('.gl').lastElementChild || !window._hemmaNotify || !window._hemmaNotify.rows.length) return;
       e.stopPropagation();
       saverNotes(sr, row);
@@ -5589,16 +5591,22 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       $('.wx').hidden = !w;
       if (!w) return;
       const a = w.attributes || {}, u = a.temperature_unit ? '' : '';
-      $('.wx .c span').textContent = (hs.config && hs.config.location_name) || a.friendly_name || '';
       $('.wx .tp').textContent = a.temperature != null ? Math.round(a.temperature) + '°' + u : '';
-      $('.wx i').style.setProperty('--i', `url('${wxIcon(w.state)}')`);
-      try { $('.wx .cd').textContent = hs.formatEntityState ? hs.formatEntityState(w) : w.state; } catch (_) { $('.wx .cd').textContent = w.state; }
+      $('.wx .cd i').style.setProperty('--i', `url('${wxIcon(w.state)}')`);
+      try { $('.wx .cd span').textContent = hs.formatEntityState ? hs.formatEntityState(w) : w.state; } catch (_) { $('.wx .cd span').textContent = w.state; }
+      const today = weatherRange || {};
+      const low = today.templow != null ? today.templow : today.temperature_low;
+      const high = today.temperature != null ? today.temperature : today.temperature_high;
+      $('.wx .rng').hidden = low == null && high == null;
+      $('.wx .rng .lo').textContent = low == null ? '' : `↓ ${Math.round(low)}°`;
+      $('.wx .rng .hi').textContent = high == null ? '' : `↑ ${Math.round(high)}°`;
     };
     const forecast = () => {
       const hs = CAMS.hassNow();
       if (!wid || !hs.connection) return;
       hs.connection.sendMessagePromise({ type: 'call_service', domain: 'weather', service: 'get_forecasts', service_data: { type: 'daily' }, target: { entity_id: wid }, return_response: true }).then((r) => {
         fc = (((r && r.response) || {})[wid] || {}).forecast || null;
+        weatherRange = fc && fc[0] ? fc[0] : null;
         if (fc) $('.fc').innerHTML = fc.slice(1, 6).map((d) => `<div><span>${esc(new Date(d.datetime).toLocaleDateString(lang, { weekday: 'short' }))}</span><i style="--i:url('${wxIcon(d.condition)}')"></i><span>${Math.round(d.temperature)}° / ${Math.round(d.templow != null ? d.templow : d.temperature)}°</span></div>`).join('');
         wx(); media();
       }).catch(() => {});
