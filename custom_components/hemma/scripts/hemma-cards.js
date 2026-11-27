@@ -35,7 +35,7 @@
   const HEMMA_FAMILY_CALENDARS = [
     { label: 'Alice', color: '#FF375F', re: /\b(alice|qel1|ql1|jatobas)\b/ },
     { label: 'Léia', color: '#30D158', re: /\bleia\b/ },
-    { label: 'Anderson', color: '#0A84FF', re: /\b(anderson|a[\s._-]*tecnohead)\b/ },
+    { label: 'Anderson', color: '#0A84FF', re: /\b(anderson|a[\s._-]*(?:ponto[\s._-]*)?tecnohead)\b/ },
   ];
   const hemmaCalendarMeta = (id, name, index = 0) => {
     const key = `${id || ''} ${name || ''}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -43,6 +43,18 @@
     return person
       ? { label: person.label, color: person.color }
       : { label: name, color: HEMMA_CALENDAR_TONES[index % HEMMA_CALENDAR_TONES.length] };
+  };
+  const HEMMA_FAMILY_ORDER = ['Anderson', 'Léia', 'Alice'];
+  const hemmaFamilyCalendarIds = (h, ids) => {
+    const ranked = [];
+    (ids || []).forEach((id, index) => {
+      const s = h.states[id];
+      if (!s) return;
+      const a = s.attributes || {}, rawName = a.friendly_name || id.replace(/^calendar\./, '').replace(/[_-]+/g, ' ');
+      const meta = hemmaCalendarMeta(id, rawName, index), rank = HEMMA_FAMILY_ORDER.indexOf(meta.label);
+      if (rank >= 0) ranked.push({ id, rank });
+    });
+    return ranked.sort((a, b) => a.rank - b.rank).map((item) => item.id);
   };
   const STATUS_POP = { vacuum: 'hemma-vacuum-panel', light: 'hemma-light-panel', fan: 'hemma-fan-panel', humidifier: 'hemma-humidifier-panel', cover: 'hemma-cover-panel',
     lock: 'hemma-lock-panel', media_player: 'hemma-media-panel', climate: 'hemma-thermostat-panel' };
@@ -5497,7 +5509,8 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       im.onerror = () => swap(null);
       im.src = art;
     };
-    const cals = (Array.isArray(o.cals) && o.cals.length ? o.cals : Object.keys(h.states)).filter((k) => k.indexOf('calendar.') === 0 && h.states[k]);
+    const cals0 = (Array.isArray(o.cals) && o.cals.length ? o.cals : Object.keys(h.states)).filter((k) => k.indexOf('calendar.') === 0 && h.states[k]);
+    const cals = hemmaFamilyCalendarIds(h, cals0);
     // Today keeps the compact status list beside the photo. A previous
     // configuration may still say "calendar" from the older full widget, so
     // migrate that stale choice while keeping the full week view on tap.
@@ -5733,7 +5746,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     setTimeout(() => { const g = $('.stg'); if (g) g.classList.remove('still'); }, 2500);
     wx(); forecast(); calendar(); familyPhotos();
     SAVER.wx = setInterval(() => { wx(); }, 60000);
-    SAVER.cal = setInterval(calendar, 5 * 60000);
+    SAVER.cal = setInterval(calendar, 30 * 1000);
     SAVER.fc = setInterval(forecast, 30 * 60000);
     SAVER.ph = setInterval(familyPhotos, 5000);
     // Clock and weather share the same burn-in drift so their aligned axis
@@ -6567,18 +6580,21 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     .ctm { position: absolute; z-index: 4; top: max(32px, calc(env(safe-area-inset-top, 0px) + 20px)); right: max(40px, env(safe-area-inset-right, 0px)); font-size: 34px; line-height: 1; font-weight: 600; letter-spacing: -0.02em; color: #fff; text-shadow: 0 1px 14px rgba(0,0,0,0.45); font-family: -apple-system, system-ui, sans-serif; }
   `;
   const SVX_C = { ev: null, evKey: '', fc: null, fcKey: '' };
-  const svxCals = (h, o) => (Array.isArray(o.cals) && o.cals.length ? o.cals : Object.keys(h.states)).filter((k) => k.indexOf('calendar.') === 0 && h.states[k]);
+  const svxCals = (h, o) => {
+    const ids = (Array.isArray(o.cals) && o.cals.length ? o.cals : Object.keys(h.states)).filter((k) => k.indexOf('calendar.') === 0 && h.states[k]);
+    return hemmaFamilyCalendarIds(h, ids);
+  };
   const svxForecast = (hs, wid) => {
     if (!wid || !hs || !hs.connection) return Promise.resolve(null);
     return hs.connection.sendMessagePromise({ type: 'call_service', domain: 'weather', service: 'get_forecasts', service_data: { type: 'daily' }, target: { entity_id: wid }, return_response: true })
       .then((r) => { const f = (((r && r.response) || {})[wid] || {}).forecast || null; if (f) { SVX_C.fc = f; SVX_C.fcKey = wid; } return f; }).catch(() => null);
   };
-  const svxEvents = (hs, cals, anchor) => {
+  const svxEvents = (hs, cals, anchor, force = false) => {
     if (!cals.length || !hs || !hs.callApi) return Promise.resolve([]);
     const a = new Date(anchor || new Date()); a.setHours(0, 0, 0, 0);
     const b = new Date(a); b.setDate(b.getDate() + 7);
     const key = cals.join() + '|' + a.toISOString().slice(0, 10);
-    if (SVX_C.evKey === key && SVX_C.ev) return Promise.resolve(SVX_C.ev);
+    if (!force && SVX_C.evKey === key && SVX_C.ev) return Promise.resolve(SVX_C.ev);
     return Promise.all(cals.map((id, ci) => hs.callApi('GET', `calendars/${id}?start=${encodeURIComponent(a.toISOString())}&end=${encodeURIComponent(b.toISOString())}`).then((l) => (l || []).map((e) => Object.assign(e, { _c: ci, _id: id }))).catch(() => []))).then((all) => {
       const seen = new Set();
       const evs = [].concat(...all).map((e) => {
@@ -6647,7 +6663,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     });
     if (kind === 'week' && SVX_C.evKey === cals.join() + '|' + weekAnchor().toISOString().slice(0, 10)) evs = SVX_C.ev;
     if (SVX_C.fcKey === wid) fc = SVX_C.fc;
-    const calendar = () => { svxEvents(CAMS.hassNow(), cals, kind === 'week' ? weekAnchor() : new Date()).then((e) => { evs = e; draw(); }); };
+    const calendar = () => { svxEvents(CAMS.hassNow(), cals, kind === 'week' ? weekAnchor() : new Date(), true).then((e) => { evs = e; draw(); }); };
     const rooms = () => {
       const c = saverLL() || (Array.isArray(o.views) ? { views: o.views } : null), dk = !!(h.themes && h.themes.darkMode), out = [], seen = new Set();
       for (const v of (c && c.views) || []) {
@@ -6711,7 +6727,13 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
         const finish = new Date(start); finish.setDate(finish.getDate() + ND - 1);
         const range = `${start.toLocaleDateString(lang, { day: 'numeric', month: 'short' })} – ${finish.toLocaleDateString(lang, { day: 'numeric', month: 'short' })}`;
         const filters = [{ id: '', name: T('saver.lights_all', 'All') }].concat(calInfo).map((x) => `<button type="button" class="wkctl filter${weekFilter === x.id ? ' on' : ''}" data-wk-filter="${esc(x.id)}" aria-pressed="${weekFilter === x.id}"><i style="--c:${x.color || 'var(--sub)'}"></i><span>${esc(x.name)}</span></button>`).join('');
-        put(`<div class="hd"><div class="wkt"><h1>${esc(T('saver.this_week', 'This Week'))}</h1><p>${esc(range)}</p></div><div class="wkhead"><button type="button" class="wkctl nav" data-wk-nav="-1" aria-label="Previous seven days">‹</button><div class="tm num">${esc(clockTxt(d))}</div><button type="button" class="wkctl nav" data-wk-nav="1" aria-label="Next seven days">›</button></div></div><div class="gr">${cols}</div><div class="wkbar">${filters}</div>`);
+        const weekTitle = weekOffset === 0 ? T('saver.this_week', 'Esta semana')
+          : weekOffset === 1 ? T('saver.next_week', 'Próxima semana')
+            : weekOffset === 2 ? T('saver.in_two_weeks', 'Daqui duas semanas')
+              : weekOffset > 2 ? T('saver.in_n_weeks', 'Daqui {n} semanas', { n: weekOffset })
+                : weekOffset === -1 ? T('saver.last_week', 'Semana passada')
+                  : T('saver.weeks_ago', 'Há {n} semanas', { n: Math.abs(weekOffset) });
+        put(`<div class="hd"><div class="wkt"><h1>${esc(weekTitle)}</h1><p>${esc(range)}</p></div><div class="wkhead"><button type="button" class="wkctl nav" data-wk-nav="-1" aria-label="Previous seven days">‹</button><div class="tm num">${esc(clockTxt(d))}</div><button type="button" class="wkctl nav" data-wk-nav="1" aria-label="Next seven days">›</button></div></div><div class="gr">${cols}</div><div class="wkbar">${filters}</div>`);
       }
     };
     if (kind === 'week') {
@@ -6847,7 +6869,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       SAVER.clock = setInterval(draw, 10000);
       forecast(); SAVER.fc = setInterval(forecast, 30 * 60000);
       if (kind === 'week') {
-        calendar(); SAVER.cal = setInterval(calendar, 5 * 60000);
+        calendar(); SAVER.cal = setInterval(calendar, 30 * 1000);
         let artFor = null;
         const artwork = () => {
           if (o.bg !== 'artwork' && o.bg !== 'album') return;
