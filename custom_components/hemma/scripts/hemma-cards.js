@@ -5094,8 +5094,8 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     /* Upright, the media (or forecast, or Home at a glance) sits beside the weather as in landscape; the calendar takes the full width under it. */
     :host(.pt) .stg .wx { left: 470px; top: 690px; } :host(.pt) .wx .tp { font-size: 150px; }
     :host(.pt) .stg .md, :host(.pt) .stg .fc, :host(.pt) .stg .gl { left: 60px; top: 700px; width: 360px; }
-    :host(.pt) .stg.wide .wx { left: 60px; top: 575px; display: grid; grid-template-columns: auto auto; grid-template-areas: "c ." "tp i" "tp cd" "tp hl"; column-gap: 36px; align-items: end; }
-    :host(.pt) .stg.wide .wx .c { grid-area: c; } :host(.pt) .stg.wide .wx .tp { grid-area: tp; align-self: end; } :host(.pt) .stg.wide .wx i { grid-area: i; margin: 0 0 6px; width: 48px; height: 40px; } :host(.pt) .stg.wide .wx .cd { grid-area: cd; } :host(.pt) .stg.wide .wx .hl { grid-area: hl; padding-bottom: 18px; }
+    :host(.pt) .stg.wide .wx { left: 60px; top: 575px; display: grid; grid-template-columns: auto auto; grid-template-areas: "c ." "tp i" "tp cd"; column-gap: 36px; align-items: end; }
+    :host(.pt) .stg.wide .wx .c { grid-area: c; } :host(.pt) .stg.wide .wx .tp { grid-area: tp; align-self: end; } :host(.pt) .stg.wide .wx i { grid-area: i; margin: 0 0 6px; width: 48px; height: 40px; } :host(.pt) .stg.wide .wx .cd { grid-area: cd; }
     :host(.pt) .stg .cal, :host(.pt) .stg.wide .cal { left: 60px; top: 845px; width: 700px; }
     .cal, .gl { position: absolute; left: 5%; top: 55%; width: 34%; display: grid; gap: 20px; }
     .cal .hd, .gl > div { display: flex; align-items: center; gap: 14px; font-size: 38px; font-weight: 600; line-height: 1.1; min-width: 0; }
@@ -5111,7 +5111,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     .cal .more { font-size: 34px; font-weight: 500; color: var(--sub); }
     .wx .c { font-size: 28px; font-weight: 600; color: var(--hi); display: flex; align-items: center; gap: 6px; }
     .wx .tp { font-size: 168px; font-weight: 600; line-height: 1; letter-spacing: -0.04em; margin-top: 2px; }
-    .wx .cd, .wx .hl { font-size: 26px; font-weight: 500; } .wx i { margin: 10px 0 6px; width: 52px; height: 44px; }
+    .wx .cd { font-size: 26px; font-weight: 500; } .wx i { margin: 10px 0 6px; width: 52px; height: 44px; }
     /* Tecnohead Today photo lane: portrait-only family photos run from top to
        bottom in the centre. The blurred copy fills the lane behind the intact
        image so mixed portrait ratios never produce black side bars. */
@@ -5170,7 +5170,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     :host(.compact) .stg.family .wx .c svg { width: 26px; height: 26px; }
     :host(.compact) .stg.family .wx .tp { font-size: 165px; text-align: center; }
     :host(.compact) .stg.family .wx i { margin: 10px auto 6px; }
-    :host(.compact) .stg.family .wx .cd, :host(.compact) .stg.family .wx .hl { font-size: 30px; text-align: center; }
+    :host(.compact) .stg.family .wx .cd { font-size: 30px; text-align: center; }
     :host(.compact) .pfv { grid-template-columns: 58px minmax(0, 1fr) 58px; gap: 10px; padding-inline: 20px; }
     :host(.compact) .pfv .pvtop b { font-size: 20px; }
     :host(.compact) .pfv button { width: 48px; height: 48px; }
@@ -5402,7 +5402,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       <div class="fc" hidden></div><div class="cal" hidden></div><div class="gl" hidden></div>
        <div class="fam" hidden role="group" aria-label="Fotos"><div class="fp"><img alt="Foto"></div><div class="fb"><span class="dots"></span></div></div>
        <div class="pfv" hidden role="dialog" aria-label="Visualizador de fotos"><div class="pvtop"><button type="button" class="pvclose" aria-label="Voltar">×</button><b class="pvname">Fotos</b><span class="pvcount"></span></div><button type="button" class="pvnav pvprev" aria-label="Foto anterior">‹</button><div class="pvframe"><img alt="Foto da família"></div><button type="button" class="pvnav pvnext" aria-label="Próxima foto">›</button><div class="pvfoot"><span class="pvdots"></span></div></div>
-      <div class="wx" hidden><div class="c"><span></span><svg width="18" height="18" viewBox="0 0 16 16"><path d="M15 1 1 7l6 2 2 6z" style="fill:var(--hi)"/></svg></div><div class="tp"></div><i></i><div class="cd"></div><div class="hl"></div></div>
+      <div class="wx" hidden><div class="c"><span></span><svg width="18" height="18" viewBox="0 0 16 16"><path d="M15 1 1 7l6 2 2 6z" style="fill:var(--hi)"/></svg></div><div class="tp"></div><i></i><div class="cd"></div></div>
     </div>${o.np === 'keep' ? MINI_HTML : ''}<div class="dark"></div>`;
     stageFit(sr);
     const $ = (q) => sr.querySelector(q);
@@ -5567,8 +5567,6 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       $('.wx .tp').textContent = a.temperature != null ? Math.round(a.temperature) + '°' + u : '';
       $('.wx i').style.setProperty('--i', `url('${wxIcon(w.state)}')`);
       try { $('.wx .cd').textContent = hs.formatEntityState ? hs.formatEntityState(w) : w.state; } catch (_) { $('.wx .cd').textContent = w.state; }
-      const f0 = fc && fc[0];
-      $('.wx .hl').textContent = f0 && f0.temperature != null ? `H:${Math.round(f0.temperature)}° L:${Math.round(f0.templow != null ? f0.templow : f0.temperature)}°` : '';
     };
     const forecast = () => {
       const hs = CAMS.hassNow();
