@@ -30,6 +30,20 @@
     yellow: '#FFCC00', amber: '#ffb254', orange: '#FF9230', red: '#FF4245', pink: '#ff4d70', purple: '#9333ea',
     blue: '#0088FF', ice: '#3cd3fe', teal: '#00C3D0', mint: '#00C8B3', green: '#30D158', gold: '#e5a00d', neutral: '#CDCDCF',
   };
+  // Calendários familiares: a conta define a pessoa e a cor usada no EMA.
+  const HEMMA_CALENDAR_TONES = ['#30D158', '#0A84FF', '#FF9F0A', '#BF5AF2', '#FF375F', '#64D2FF'];
+  const HEMMA_FAMILY_CALENDARS = [
+    { label: 'Alice', color: '#FF375F', re: /\b(alice|qel1|ql1|jatobas)\b/ },
+    { label: 'Léia', color: '#30D158', re: /\bleia\b/ },
+    { label: 'Anderson', color: '#0A84FF', re: /\b(anderson|a[\s._-]*tecnohead)\b/ },
+  ];
+  const hemmaCalendarMeta = (id, name, index = 0) => {
+    const key = `${id || ''} ${name || ''}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const person = HEMMA_FAMILY_CALENDARS.find((item) => item.re.test(key));
+    return person
+      ? { label: person.label, color: person.color }
+      : { label: name, color: HEMMA_CALENDAR_TONES[index % HEMMA_CALENDAR_TONES.length] };
+  };
   const STATUS_POP = { vacuum: 'hemma-vacuum-panel', light: 'hemma-light-panel', fan: 'hemma-fan-panel', humidifier: 'hemma-humidifier-panel', cover: 'hemma-cover-panel',
     lock: 'hemma-lock-panel', media_player: 'hemma-media-panel', climate: 'hemma-thermostat-panel' };
   const STATUS_POP_STYLE = { 'hemma-vacuum-panel': '--popup-min-width: 300px; --popup-max-width: 300px; --popup-min-width-narrow: 300px; --hemma-popup-radius: 34px; --hemma-popup-tint: rgba(0, 0, 5, 0.16);' };
@@ -5104,8 +5118,8 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     .cal .hd i b, .gl i b { width: 28px; height: 28px; background: var(--ink); -webkit-mask: var(--i) center / contain no-repeat; mask: var(--i) center / contain no-repeat; }
     .gl > div span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; padding-block: 2px; margin-block: -6px; }
     .cal .ev { position: relative; display: grid; padding-left: 18px; min-width: 0; }
-    .cal .ev::before { content: ""; position: absolute; left: 0; top: 5px; bottom: 5px; width: 5px; border-radius: 3px; background: var(--hi); }
-    .cal .tm { font-size: 36px; font-weight: 700; color: var(--hi); line-height: 1.12; letter-spacing: -0.01em; white-space: nowrap; }
+    .cal .ev::before { content: ""; position: absolute; left: 0; top: 5px; bottom: 5px; width: 5px; border-radius: 3px; background: var(--c, var(--hi)); }
+    .cal .tm { font-size: 36px; font-weight: 700; color: var(--c, var(--hi)); line-height: 1.12; letter-spacing: -0.01em; white-space: nowrap; }
     .cal .tm small { font-size: 26px; font-weight: 700; margin-left: 1px; }
     .cal .nm { font-size: 40px; font-weight: 500; line-height: 1.28; margin-block: -3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .cal .more { font-size: 34px; font-weight: 500; color: var(--sub); }
@@ -5511,8 +5525,12 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       if (!cals.length || !hs.callApi) return;
       const now = new Date(), end = new Date(now); end.setHours(24, 0, 0, 0);
       const tom = new Date(end); tom.setDate(tom.getDate() + 6);
-      Promise.all(cals.map((id) => hs.callApi('GET', `calendars/${id}?start=${encodeURIComponent(now.toISOString())}&end=${encodeURIComponent(tom.toISOString())}`).catch(() => []))).then((all) => {
-        const evs = [].concat(...all).map((e) => ({ name: e.summary || '', day: !!(e.start && e.start.date && !e.start.dateTime), a: new Date((e.start && (e.start.dateTime || e.start.date + 'T00:00')) || 0), b: new Date((e.end && (e.end.dateTime || e.end.date + 'T00:00')) || 0) }))
+      Promise.all(cals.map((id, ci) => hs.callApi('GET', `calendars/${id}?start=${encodeURIComponent(now.toISOString())}&end=${encodeURIComponent(tom.toISOString())}`).then((list) => (list || []).map((e) => Object.assign(e, { _c: ci, _id: id }))).catch(() => []))).then((all) => {
+        const evs = [].concat(...all).map((e) => {
+          const s = hs.states[e._id] || {}, a = s.attributes || {};
+          const rawName = a.friendly_name || e._id.replace(/^calendar\./, '').replace(/[_-]+/g, ' '), meta = hemmaCalendarMeta(e._id, rawName, e._c);
+          return { name: e.summary || '', day: !!(e.start && e.start.date && !e.start.dateTime), a: new Date((e.start && (e.start.dateTime || e.start.date + 'T00:00')) || 0), b: new Date((e.end && (e.end.dateTime || e.end.date + 'T00:00')) || 0), c: meta.color };
+        })
           .filter((e) => e.b > now).sort((x, y) => x.a - y.a);
         const today = evs.filter((e) => e.a < end), days = today.filter((e) => e.day), timed = today.filter((e) => !e.day);
         // With nothing left today, the widget becomes Up Next: the coming week's events, each with its day.
@@ -5523,7 +5541,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
         const when = (e) => later.length ? (e.day ? esc(dayOf(e.a)) : `${esc(dayOf(e.a))} ${span(e.a, e.b)}`) : span(e.a, e.b);
         const max = cal.head ? 2 : 3, shown = cal.list.slice(0, max), rest = cal.list.length - shown.length;
         $('.cal').innerHTML = (cal.head ? `<div class="hd">${ico('calendar')}<span>${esc(cal.head)}</span></div>` : '')
-          + shown.map((e) => `<div class="ev"><span class="tm">${when(e)}</span><span class="nm">${esc(e.name)}</span></div>`).join('')
+          + shown.map((e) => `<div class="ev" style="--c:${e.c}"><span class="tm">${when(e)}</span><span class="nm">${esc(e.name)}</span></div>`).join('')
           + (rest > 0 ? `<div class="more">${esc(rest === 1 ? T('saver.one_more', '1 more event') : T('saver.more_events', '{n} more events', { n: rest }))}</div>` : '');
         media();
       });
@@ -6537,7 +6555,6 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     .chome i { width: 19px; height: 19px; background: #fff; -webkit-mask: var(--i) center / contain no-repeat; mask: var(--i) center / contain no-repeat; }
     .ctm { position: absolute; z-index: 4; top: max(32px, calc(env(safe-area-inset-top, 0px) + 20px)); right: max(40px, env(safe-area-inset-right, 0px)); font-size: 34px; line-height: 1; font-weight: 600; letter-spacing: -0.02em; color: #fff; text-shadow: 0 1px 14px rgba(0,0,0,0.45); font-family: -apple-system, system-ui, sans-serif; }
   `;
-  const SVX_TONES = ['#30D158', '#0A84FF', '#FF9F0A', '#BF5AF2', '#FF375F', '#64D2FF'];
   const SVX_C = { ev: null, evKey: '', fc: null, fcKey: '' };
   const svxCals = (h, o) => (Array.isArray(o.cals) && o.cals.length ? o.cals : Object.keys(h.states)).filter((k) => k.indexOf('calendar.') === 0 && h.states[k]);
   const svxForecast = (hs, wid) => {
@@ -6555,7 +6572,8 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       const seen = new Set();
       const evs = [].concat(...all).map((e) => {
         const s = hs.states[e._id] || {}, a = s.attributes || {};
-        return { name: e.summary || '', cid: e._id, cal: a.friendly_name || e._id.replace(/^calendar\./, '').replace(/[_-]+/g, ' '), day: !!(e.start && e.start.date && !e.start.dateTime), a: new Date((e.start && (e.start.dateTime || e.start.date + 'T00:00')) || 0), b: new Date((e.end && (e.end.dateTime || e.end.date + 'T00:00')) || 0), c: SVX_TONES[e._c % SVX_TONES.length] };
+        const rawName = a.friendly_name || e._id.replace(/^calendar\./, '').replace(/[_-]+/g, ' '), meta = hemmaCalendarMeta(e._id, rawName, e._c);
+        return { name: e.summary || '', cid: e._id, cal: meta.label, day: !!(e.start && e.start.date && !e.start.dateTime), a: new Date((e.start && (e.start.dateTime || e.start.date + 'T00:00')) || 0), b: new Date((e.end && (e.end.dateTime || e.end.date + 'T00:00')) || 0), c: meta.color };
       })
         .filter((e) => { const k = e.name + '|' + +e.a; if (seen.has(k)) return false; seen.add(k); return true; }).sort((x, y) => x.a - y.a);
       SVX_C.ev = evs; SVX_C.evKey = key;
@@ -6613,7 +6631,8 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     const weekAnchor = () => { const a = new Date(); a.setHours(0, 0, 0, 0); a.setDate(a.getDate() + weekOffset * ND); return a; };
     const calInfo = cals.map((id, i) => {
       const s = h.states[id] || {}, a = s.attributes || {};
-      return { id, name: a.friendly_name || id.replace(/^calendar\./, '').replace(/[_-]+/g, ' '), color: SVX_TONES[i % SVX_TONES.length] };
+      const rawName = a.friendly_name || id.replace(/^calendar\./, '').replace(/[_-]+/g, ' '), meta = hemmaCalendarMeta(id, rawName, i);
+      return { id, name: meta.label, color: meta.color };
     });
     if (kind === 'week' && SVX_C.evKey === cals.join() + '|' + weekAnchor().toISOString().slice(0, 10)) evs = SVX_C.ev;
     if (SVX_C.fcKey === wid) fc = SVX_C.fc;
