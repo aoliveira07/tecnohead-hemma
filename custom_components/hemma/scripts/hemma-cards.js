@@ -6888,7 +6888,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     saverMini(sr);
     const mi = $('.mini');
     if (stg && mi) { const np = () => stg.classList.toggle('np', kind !== 'aerial' && mi.classList.contains('on')); np(); new MutationObserver(np).observe(mi, { attributes: true, attributeFilter: ['class'] }); }
-    saverMount(layer, sr, o, (n) => n.classList.contains('mini') || n.classList.contains('c') || n.classList.contains('cz'));
+    saverMount(layer, sr, o, (n) => n.classList.contains('mini') || n.classList.contains('c') || n.classList.contains('cz') || n.classList.contains('wk') || n.classList.contains('wkctl'));
   };
   window.hemmaSaver = {
     get on() { return !!SAVER.layer; },
