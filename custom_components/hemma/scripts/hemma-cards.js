@@ -6753,6 +6753,14 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
         weekOffset += dx < 0 ? 1 : -1;
         draw(); calendar();
       }, true);
+      stg.addEventListener('pointerup', (e) => {
+        const b = e.target.closest && e.target.closest('.wkctl');
+        if (!b) return;
+        e.preventDefault(); e.stopPropagation();
+        weekSwiped = Date.now();
+        if (b.dataset.wkNav) { weekOffset += Number(b.dataset.wkNav) || 0; draw(); calendar(); return; }
+        if (b.dataset.wkFilter !== undefined) { weekFilter = b.dataset.wkFilter; draw(); }
+      }, true);
       stg.addEventListener('pointercancel', () => { down = null; }, true);
       stg.addEventListener('click', (e) => {
         if (Date.now() - weekSwiped < 600) { e.preventDefault(); e.stopImmediatePropagation(); return; }
