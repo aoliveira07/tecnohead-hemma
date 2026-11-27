@@ -5498,7 +5498,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       im.src = art;
     };
     const cals = (Array.isArray(o.cals) && o.cals.length ? o.cals : Object.keys(h.states)).filter((k) => k.indexOf('calendar.') === 0 && h.states[k]);
-    const idle = (o.idle === 'forecast' ? '' : o.idle) || (cals.length ? 'calendar' : 'glance'), keep = o.np === 'keep';
+    const idle = (o.idle === 'forecast' ? '' : o.idle) || 'glance', keep = o.np === 'keep';
     const ico = (n) => `<i><b style="--i:url(&quot;${window.hemmaIconUrl ? window.hemmaIconUrl(n) : ''}&quot;)"></b></i>`;
     const glance = () => {
       const S = CAMS.hassNow().states, ids = Object.keys(S), on = (d, f) => ids.filter((k) => k.indexOf(d + '.') === 0 && f(S[k]));
