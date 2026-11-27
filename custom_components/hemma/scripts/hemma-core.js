@@ -4666,11 +4666,11 @@ window.hemmaMenuGlass = {
       // A page changed in place still waits for its tiles to pack and draw their icons before it shows.
       if (!this._catSwap && this._pane && page.contains(this._pane) && this._pane.getClientRects().length) this._catSwap = 'swap';
       const inner = page.querySelector('.cat-in');
-      const ICON = { climate: 'fan', lights: 'light', presence: 'person', media: 'media', security: 'lock-fill', energy: 'energy' };
+      const ICON = { climate: 'fan', lights: 'light', presence: 'person', media: 'media', security: 'lock-fill', energy: 'energy', organization: 'calendar' };
       const COLOR = { climate: 'var(--hemma-badge-climate-color, #00C3D0)', lights: 'var(--hemma-badge-light-color, #FFCC00)',
         presence: 'var(--hemma-color-green, #30D158)', media: 'var(--hemma-color-blue, #0A84FF)',
-        security: 'var(--hemma-color-mint, #00C8B3)', energy: 'var(--hemma-color-green, #30D158)' };
-      const EN = { climate: 'Climate', lights: 'Lights', presence: 'People', media: 'Media', security: 'Security', energy: 'Energy' };
+        security: 'var(--hemma-color-mint, #00C8B3)', energy: 'var(--hemma-color-green, #30D158)', organization: 'var(--hemma-color-pink, #FF375F)' };
+      const EN = { climate: 'Climate', lights: 'Lights', presence: 'People', media: 'Media', security: 'Security', energy: 'Energy', organization: 'Organization' };
       const name = (c) => (c === 'scenes' ? _hemmaT('nav.scenes', 'Scenes') : _hemmaT('filter.' + c, EN[c] || c));
       const head1 = k === 'home' ? this._baseTitle() : name(k);
       // A swap shows the new title with its page, not over the page it is leaving.
@@ -4888,13 +4888,14 @@ window.hemmaMenuGlass = {
         try { n = window._hemmaSC ? window._hemmaSC.list(this._hass.states, this._hass, Object.assign({}, this._scenePick, { category: k })).length : 0; } catch (_) { n = 0; }
         if (n) sections = [{ scenes: true, category: k, name: _hemmaT('nav.scenes', 'Scenes') }].concat(sections);
       }
+      const organization = k === 'organization' && !scope;
       const devices = k === 'energy' && helpers && !scope ? await this._energyDevices() : false;
       if (scope && k !== 'home' && k !== 'scenes' && window.hemmaHome && !sections.some((sec) => sec.cards && sec.cards.length)) {
         const fill = window.hemmaHome.roomCards(this._hass, scope, k, await this._roomSlotIds(scope, k));
         if (fill.length) sections = sections.concat([{ cards: k === 'lights' ? this._expandLights(scope, fill) : fill }]);
       }
       if (this._cat !== k || this._catPage !== page) return false;
-      if ((!sections.length && !devices) || !helpers) {
+      if ((!sections.length && !devices && !organization) || !helpers) {
         body.style.visibility = '';
         const empty = document.createElement('div');
         empty.className = 'cat-empty';
@@ -4903,6 +4904,18 @@ window.hemmaMenuGlass = {
         return false;
       }
       const group = () => body.appendChild(Object.assign(document.createElement('div'), { className: 'cat-sec' }));
+      if (organization) {
+        const box = group();
+        const h = document.createElement('h2');
+        h.textContent = _hemmaT('organization.title', 'Family calendar');
+        box.appendChild(h);
+        const cal = document.createElement('hemma-organization-calendar');
+        cal.setConfig({ calendars: Object.keys(this._hass.states || {}).filter((id) => id.indexOf('calendar.') === 0) });
+        box.appendChild(cal);
+        cards.push(cal);
+        try { cal.hass = this._hass; } catch (_) {}
+        return true;
+      }
       if ((k === 'media' || k === 'home') && !scope && head.np && cards === this._catCards) { const g = group(); g._npHome = k === 'home'; this._mountNP(g, cfg, head.np, helpers); }
       // Cameras sit under Now Playing on Home, first in a room (its own cameras) and first on Security.
       const CS = cfg && cfg.hemma_cameras, CV = window.hemmaCams;
@@ -6550,6 +6563,9 @@ window.hemmaMenuGlass = {
     }
 
     _catHasContent(k) {
+      if (k === 'organization') {
+        return !!(this._hass && Object.keys(this._hass.states || {}).some((id) => id.indexOf('calendar.') === 0 && this._hass.states[id]));
+      }
       if (this._catSections(this._mobCfg, k).length) return true;
       if (k !== 'energy') return false;
       if (this._energyPrefs === undefined) {
@@ -6564,12 +6580,13 @@ window.hemmaMenuGlass = {
     }
 
     _sideCategories() {
-      const ALL = ['climate', 'lights', 'presence', 'media', 'security', 'energy'];
+      const ALL = ['climate', 'lights', 'presence', 'media', 'security', 'energy', 'organization'];
       if (this._mobCfg) {
         const b = this._catHeadCards(this._mobCfg).badges;
         if (b) {
-          const order = (b.variables && Array.isArray(b.variables.badge_order) && b.variables.badge_order.length)
+          const configured = b.variables && Array.isArray(b.variables.badge_order) && b.variables.badge_order.length
             ? b.variables.badge_order : ALL;
+          const order = configured.concat('organization');
           const v = b.variables || {};
           return order.map((k) => (k === 'people' ? 'presence' : k)).filter((k, i, a) => ALL.indexOf(k) >= 0 && a.indexOf(k) === i
             && v['show_' + (k === 'presence' ? 'people' : k)] !== false && this._catHasContent(k));
@@ -6589,7 +6606,7 @@ window.hemmaMenuGlass = {
           if (t.indexOf('hemma_badge_' + k) >= 0 && el.getBoundingClientRect().width > 0) have.add(MAP[k]);
         }
       });
-      return ['climate', 'lights', 'presence', 'media', 'security', 'energy'].filter((k) => have.has(k));
+      return ['climate', 'lights', 'presence', 'media', 'security', 'energy', 'organization'].filter((k) => have.has(k) || this._catHasContent(k));
     }
 
     _sceneCount() {
@@ -6678,9 +6695,9 @@ window.hemmaMenuGlass = {
       if (cats.length) {
         const group = this._sideSection(list, 'categories', _hemmaT('nav.categories', 'Categories'));
         const ICON = { climate: 'fan', lights: 'light', presence: 'person',
-          media: 'media', security: 'lock-fill', energy: 'energy' };
+          media: 'media', security: 'lock-fill', energy: 'energy', organization: 'calendar' };
         const EN = { climate: 'Climate', lights: 'Lights', presence: 'People', media: 'Media',
-          security: 'Security', energy: 'Energy' };
+          security: 'Security', energy: 'Energy', organization: 'Organization' };
         cats.forEach((k) => {
           const cat = this._sideItem(ICON[k], _hemmaT('filter.' + k, EN[k]), this._cat === k, () => {
             if (!this._pushed) this._closeSide();
@@ -9064,6 +9081,135 @@ window.hemmaMenuGlass = {
       `;
     }
   }
+
+  // The Organization category is a native Hemma page rather than a link to HA's
+  // calendar. It keeps the seven-day family agenda inside the same glass UI and
+  // gives the wall panel the same filtering and week navigation as the saver.
+  class HemmaOrganizationCalendar extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      this._offset = 0;
+      this._filter = '';
+      this._request = '';
+      this._events = [];
+      this._calendars = [];
+    }
+    setConfig(config) { this._config = config || {}; this._request = ''; this._ensure(); this._refresh(true); }
+    getCardSize() { return 8; }
+    connectedCallback() {
+      this._connected = true;
+      this._ensure();
+      this._refresh(true);
+      clearInterval(this._tick);
+      this._tick = setInterval(() => this._refresh(true), 300000);
+    }
+    disconnectedCallback() { this._connected = false; clearInterval(this._tick); }
+    set hass(hass) { this._hass = hass; this._ensure(); this._refresh(false); }
+    _ensure() {
+      if (this.shadowRoot.querySelector('.org-root')) return;
+      this.shadowRoot.innerHTML = `<style>
+        :host { display:block; color:var(--hv-ink,#fff); font-family:var(--primary-font-family,system-ui); }
+        .org-root { max-width:1480px; }
+        .org-head { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin:0 0 16px; }
+        .org-eyebrow { color:var(--hv-sub,rgba(235,235,245,.62)); font-size:13px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+        .org-range { margin-top:4px; color:var(--hv-sub,rgba(235,235,245,.62)); font-size:15px; font-weight:500; }
+        .org-head h3 { margin:2px 0 0; font-size:28px; line-height:1.05; font-weight:650; letter-spacing:-.02em; }
+        .org-nav { display:flex; gap:8px; flex:none; }
+        .org-nav button { width:42px; height:42px; border:0; border-radius:50%; color:var(--hv-ink,#fff); background:var(--hv-off,rgba(255,255,255,.12)); font:inherit; font-size:30px; line-height:1; cursor:pointer; }
+        .org-nav button:active { filter:brightness(.86); }
+        .org-filters { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 16px; }
+        .org-filter { display:inline-flex; align-items:center; gap:8px; min-height:34px; padding:0 13px 0 10px; border:0; border-radius:18px; color:var(--hv-sub,rgba(235,235,245,.68)); background:var(--hv-off,rgba(255,255,255,.09)); font:inherit; font-size:14px; font-weight:600; cursor:pointer; }
+        .org-filter i { width:9px; height:9px; border-radius:50%; background:var(--org-color,#9b9ba1); box-shadow:0 0 0 2px color-mix(in srgb,var(--org-color,#9b9ba1) 22%,transparent); }
+        .org-filter.on { color:var(--hv-ink,#fff); background:var(--hv-hi,rgba(255,255,255,.2)); }
+        .org-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:8px; align-items:stretch; }
+        .org-day { min-width:0; min-height:178px; padding:13px 12px 12px; border-radius:18px; background:var(--hv-card,rgba(255,255,255,.08)); box-sizing:border-box; }
+        .org-day.today { background:var(--hv-hi,rgba(255,255,255,.17)); }
+        .org-day-head { display:flex; align-items:baseline; justify-content:space-between; gap:5px; padding-bottom:10px; border-bottom:1px solid var(--hv-line,rgba(255,255,255,.13)); }
+        .org-day-name { overflow:hidden; color:var(--hv-sub,rgba(235,235,245,.68)); font-size:12px; font-weight:700; letter-spacing:.06em; text-overflow:ellipsis; text-transform:uppercase; white-space:nowrap; }
+        .org-day.today .org-day-name { color:var(--hv-ink,#fff); }
+        .org-day-num { flex:none; font-size:23px; font-weight:700; font-variant-numeric:tabular-nums; }
+        .org-events { display:flex; flex-direction:column; gap:7px; padding-top:10px; }
+        .org-event { min-width:0; padding:8px 8px 7px 10px; border-left:3px solid var(--org-color,#9b9ba1); border-radius:7px; background:color-mix(in srgb,var(--org-color,#9b9ba1) 16%,transparent); }
+        .org-event b { display:block; overflow:hidden; font-size:13px; font-weight:650; line-height:1.2; text-overflow:ellipsis; white-space:nowrap; }
+        .org-event span { display:block; margin-top:3px; overflow:hidden; color:var(--hv-sub,rgba(235,235,245,.62)); font-size:11px; font-weight:500; text-overflow:ellipsis; white-space:nowrap; }
+        .org-none { padding-top:12px; color:var(--hv-sub,rgba(235,235,245,.48)); font-size:12px; }
+        .org-empty { padding:24px; border-radius:18px; color:var(--hv-sub,rgba(235,235,245,.62)); background:var(--hv-card,rgba(255,255,255,.08)); }
+        @media (max-width:900px) { .org-grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+        @media (max-width:620px) { .org-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .org-day { min-height:145px; } }
+      </style><div class="org-root"></div>`;
+      this.shadowRoot.addEventListener('click', (e) => {
+        const b = e.target && e.target.closest ? e.target.closest('button') : null;
+        if (!b) return;
+        if (b.dataset.orgNav) { this._offset += Number(b.dataset.orgNav) || 0; this._request = ''; this._refresh(true); }
+        if (b.dataset.orgFilter !== undefined) { this._filter = b.dataset.orgFilter; this._draw(); }
+      });
+    }
+    _lang() { return (this._hass && this._hass.locale && this._hass.locale.language) || (this._hass && this._hass.language) || navigator.language || 'pt-BR'; }
+    _pt() { return String(this._lang()).toLowerCase().indexOf('pt') === 0; }
+    _text(en, pt) { return this._pt() ? pt : en; }
+    _esc(v) { return String(v == null ? '' : v).replace(/[&<>\"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;' }[c])); }
+    _anchor() { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + this._offset * 7); return d; }
+    _calendarList() {
+      const states = (this._hass && this._hass.states) || {};
+      const wanted = Array.isArray(this._config && this._config.calendars) ? this._config.calendars : [];
+      const ids = wanted.length ? wanted.filter((id) => states[id]) : Object.keys(states).filter((id) => id.indexOf('calendar.') === 0 && states[id]);
+      return ids.sort((a, b) => String((states[a].attributes || {}).friendly_name || a).localeCompare(String((states[b].attributes || {}).friendly_name || b), this._lang()));
+    }
+    _meta(id, name, index) {
+      const key = `${id || ''} ${name || ''}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      if (/\b(alice|qel1|ql1|jatobas)\b/.test(key)) return { label: 'Alice', color: '#FF375F' };
+      if (/\bleia\b/.test(key)) return { label: 'Léia', color: '#30D158' };
+      if (/\b(anderson|a[\s._-]*tecnohead)\b/.test(key)) return { label: 'Anderson', color: '#0A84FF' };
+      return { label: name, color: ['#30D158', '#0A84FF', '#FF9F0A', '#BF5AF2', '#FF375F', '#64D2FF'][index % 6] };
+    }
+    _refresh(force) {
+      this._ensure();
+      if (!this._hass || !this.isConnected) return;
+      const ids = this._calendarList();
+      const key = `${ids.join(',')}|${this._offset}`;
+      if (!force && key === this._request) return;
+      this._request = key;
+      this._calendars = ids.map((id, i) => {
+        const st = this._hass.states[id] || {}, name = (st.attributes || {}).friendly_name || id.replace(/^calendar\./, '').replace(/[_-]+/g, ' ');
+        return Object.assign({ id, name }, this._meta(id, name, i));
+      });
+      if (!ids.length) { this._events = []; this._draw(); return; }
+      const start = this._anchor(), end = new Date(start); end.setDate(end.getDate() + 7);
+      Promise.all(ids.map((id) => this._hass.callApi('GET', `calendars/${id}?start=${encodeURIComponent(start.toISOString())}&end=${encodeURIComponent(end.toISOString())}`).then((list) => (list || []).map((e) => Object.assign({ _id: id }, e))).catch(() => []))).then((all) => {
+        if (this._request !== key || !this.isConnected) return;
+        const byId = new Map(this._calendars.map((c) => [c.id, c]));
+        this._events = [].concat(...all).map((e) => {
+          const c = byId.get(e._id) || {}, day = !!(e.start && e.start.date && !e.start.dateTime);
+          const a = new Date((e.start && (e.start.dateTime || e.start.date + 'T00:00:00')) || 0);
+          const b = new Date((e.end && (e.end.dateTime || e.end.date + 'T00:00:00')) || a);
+          return { id: e._id, name: e.summary || '', a, b, day, color: c.color };
+        }).filter((e) => e.name && e.b > start && e.a < end).sort((a, b) => a.a - b.a);
+        this._draw();
+      });
+      this._draw();
+    }
+    _draw() {
+      const root = this.shadowRoot.querySelector('.org-root');
+      if (!root) return;
+      const start = this._anchor(), finish = new Date(start); finish.setDate(finish.getDate() + 6);
+      const lang = this._lang(), today = new Date(); today.setHours(0, 0, 0, 0);
+      const fmt = (d, o) => d.toLocaleDateString(lang, o);
+      const range = `${fmt(start, { day: 'numeric', month: 'short' })} – ${fmt(finish, { day: 'numeric', month: 'short' })}`;
+      const names = [{ id: '', label: this._text('All', 'Todos'), color: '#9b9ba1' }].concat(this._calendars);
+      const filters = names.map((c) => `<button type="button" class="org-filter${this._filter === c.id ? ' on' : ''}" data-org-filter="${this._esc(c.id)}" style="--org-color:${c.color}"><i></i><span>${this._esc(c.label)}</span></button>`).join('');
+      const days = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(start); d.setDate(d.getDate() + i); const end = new Date(d); end.setDate(end.getDate() + 1);
+        const evs = this._events.filter((e) => (!this._filter || e.id === this._filter) && e.a < end && e.b > d);
+        const events = evs.map((e) => `<div class="org-event" style="--org-color:${e.color}"><b>${this._esc(e.name)}</b><span>${this._esc(e.day ? this._text('All day', 'Dia todo') : e.a.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' }))}</span></div>`).join('');
+        const isToday = +d === +today;
+        days.push(`<article class="org-day${isToday ? ' today' : ''}"><div class="org-day-head"><span class="org-day-name">${this._esc(fmt(d, { weekday: 'short' }).replace('.', ''))}</span><b class="org-day-num">${d.getDate()}</b></div><div class="org-events">${events || `<div class="org-none">${this._esc(this._text('Nothing planned', 'Sem compromisso'))}</div>`}</div></article>`);
+      }
+      root.innerHTML = `<div class="org-head"><div><div class="org-eyebrow">${this._esc(this._text('Family calendar', 'Calendário da família'))}</div><h3>${this._esc(this._text('Next 7 days', 'Próximos 7 dias'))}</h3><div class="org-range">${this._esc(range)}</div></div><div class="org-nav"><button type="button" data-org-nav="-1" aria-label="${this._esc(this._text('Previous seven days', 'Sete dias anteriores'))}">‹</button><button type="button" data-org-nav="1" aria-label="${this._esc(this._text('Next seven days', 'Próximos sete dias'))}">›</button></div></div><div class="org-filters">${filters}</div><div class="org-grid">${days.join('')}</div>`;
+    }
+  }
+  if (!customElements.get('hemma-organization-calendar')) customElements.define('hemma-organization-calendar', HemmaOrganizationCalendar);
 
   customElements.define('hemma-nav-bar', HemmaNavBar);
   // The phone's Energy page: the Mac's two cards drawn as one, the total and chart above each device and its bar.

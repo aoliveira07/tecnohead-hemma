@@ -156,6 +156,8 @@
 	"filter.energy": "Energi",
 	"filter.lights": "Belysning",
 	"filter.media": "Media",
+  "filter.organization": "Organisation",
+  "organization.title": "Familjekalender",
 	"filter.other": "Övrigt",
 	"filter.presence": "Personer",
 	"filter.security": "Säkerhet",

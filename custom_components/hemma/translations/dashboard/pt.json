@@ -156,6 +156,8 @@
   "filter.energy": "Energia",
   "filter.lights": "Luzes",
   "filter.media": "Mídia",
+  "filter.organization": "Organização",
+  "organization.title": "Calendário da família",
   "filter.other": "Outros",
   "filter.presence": "Pessoas",
   "filter.security": "Segurança",

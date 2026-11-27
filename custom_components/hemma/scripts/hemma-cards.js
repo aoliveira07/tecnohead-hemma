@@ -7038,7 +7038,10 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
       };
       go();
     }
-    const armed = (c) => !!(c && c.mins) && (c.where === 'all' ? !window.matchMedia('(max-width: 768px)').matches : window.matchMedia('(pointer: coarse) and (min-width: 769px)').matches);
+    // Studio's "Tablets e desktops" target must also work on an Elo/HDMI
+    // panel whose browser reports a fine pointer even though its glass is touch.
+    // The old pointer check silently disabled the idle timer on those displays.
+    const armed = (c) => !!(c && c.mins) && (c.where === 'all' ? !window.matchMedia('(max-width: 768px)').matches : window.matchMedia('(min-width: 769px)').matches);
     window._hemmaSaverArmed = () => armed(cfgOf());
     const optsOf = (c) => ({ swipe: c.swipe, slide: c.slide, rotate: c.rotate, style: c.style, face: c.face, every: c.every, dark: c.dark, bg: c.bg, rest: c.rest, idle: c.idle, np: c.np, cals: c.cals, cycle: c.cycle, cams: c.cams, wdays: c.wdays, rabg: c.rabg });
     window._hemmaSaverNow = () => { const c = cfgOf(); if (!c || SAVER.layer) return false; window.hemmaSaver.start(optsOf(c)); return true; };

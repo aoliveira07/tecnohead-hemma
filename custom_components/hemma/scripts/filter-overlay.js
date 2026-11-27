@@ -343,6 +343,7 @@
     get climate()  { return _hemmaT('filter.climate', 'Climate'); },
     get lights()   { return _hemmaT('filter.lights', 'Lights'); },
     get media()    { return _hemmaT('filter.media', 'Media'); },
+    get organization() { return _hemmaT('filter.organization', 'Organization'); },
     get security() { return _hemmaT('filter.security', 'Security'); },
     get energy()   { return _hemmaT('filter.energy', 'Energy'); },
     get presence() { return _hemmaT('filter.presence', 'People'); },
