@@ -5696,7 +5696,9 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
     SAVER.cal = setInterval(calendar, 5 * 60000);
     SAVER.fc = setInterval(forecast, 30 * 60000);
     SAVER.ph = setInterval(familyPhotos, 5000);
-    saverDrift([['.dt', '.ck'], ['.md'], ['.wx', '.fc'], ['.cal', '.gl']].map((g) => g.map((q) => $(q))));
+    // Clock and weather share the same burn-in drift so their aligned axis
+    // remains aligned while the screensaver is protecting the panel.
+    saverDrift([['.dt', '.ck', '.wx'], ['.md'], ['.fc'], ['.cal', '.gl']].map((g) => g.map((q) => $(q))));
     if (keep) saverMini(sr, 'pill');
     saverMount(layer, sr, o, (n) => n.classList.contains('md') || n.classList.contains('wx') || n.classList.contains('fam') || n.classList.contains('pfv'));
     $('.wx').style.cursor = 'pointer';
