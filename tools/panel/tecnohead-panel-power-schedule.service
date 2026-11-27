@@ -1,0 +1,18 @@
+[Unit]
+Description=Tecnohead kitchen panel display schedule
+Documentation=https://github.com/aoliveira07/tecnohead-hemma/tree/main/tools/panel
+After=graphical.target
+Wants=graphical.target
+
+[Service]
+Type=simple
+Environment=HOME=/home/tecnohead
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/tecnohead/.Xauthority
+ExecStart=/usr/local/bin/tecnohead-panel-power-schedule
+Restart=always
+RestartSec=5
+KillMode=mixed
+
+[Install]
+WantedBy=graphical.target
