@@ -6726,7 +6726,7 @@ ${CLOUD_CSS}    .bg.photo { inset: -120px; background: var(--ph) center / cover 
         }
         const finish = new Date(start); finish.setDate(finish.getDate() + ND - 1);
         const range = `${start.toLocaleDateString(lang, { day: 'numeric', month: 'short' })} – ${finish.toLocaleDateString(lang, { day: 'numeric', month: 'short' })}`;
-        const filters = [{ id: '', name: T('saver.lights_all', 'All') }].concat(calInfo).map((x) => `<button type="button" class="wkctl filter${weekFilter === x.id ? ' on' : ''}" data-wk-filter="${esc(x.id)}" aria-pressed="${weekFilter === x.id}"><i style="--c:${x.color || 'var(--sub)'}"></i><span>${esc(x.name)}</span></button>`).join('');
+        const filters = calInfo.map((x) => `<button type="button" class="wkctl filter${weekFilter === x.id ? ' on' : ''}" data-wk-filter="${esc(x.id)}" aria-pressed="${weekFilter === x.id}"><i style="--c:${x.color || 'var(--sub)'}"></i><span>${esc(x.name)}</span></button>`).join('');
         const weekTitle = weekOffset === 0 ? T('saver.this_week', 'Esta semana')
           : weekOffset === 1 ? T('saver.next_week', 'Próxima semana')
             : weekOffset === 2 ? T('saver.in_two_weeks', 'Daqui duas semanas')
